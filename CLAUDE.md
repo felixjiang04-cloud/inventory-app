@@ -41,4 +41,4 @@ Solo founder, non-expert programmer, learning as we build.
 - Prefer boring, readable code over clever code.
 
 ## Current milestone
-Stage 0: project setup (git, folder structure, GitHub)
+Stage 1: walking skeleton (FastAPI + React + i18n wired together)
