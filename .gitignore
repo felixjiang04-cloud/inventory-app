@@ -1,0 +1,38 @@
+# --- Secrets: never commit these ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- Python (backend) ---
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- Node / frontend ---
+node_modules/
+dist/
+build/
+.cache/
+
+# --- Logs and local databases ---
+*.log
+*.sqlite
+*.sqlite3
+
+# --- OS junk ---
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# --- Editor settings ---
+.vscode/
+.idea/
+
+# --- Claude Code local settings ---
+.claude/settings.local.json
