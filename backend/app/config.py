@@ -14,8 +14,9 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    # Filled in at Stage 2 (ledger schema) from the Neon dashboard.
     database_url: str = ""
+    # Separate Neon branch used only by the test suite; tests skip if unset.
+    database_url_test: str = ""
 
 
 settings = Settings()
