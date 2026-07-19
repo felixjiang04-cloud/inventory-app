@@ -1,0 +1,9 @@
+{
+  "appTitle": "Restaurant Inventory",
+  "tagline": "Track your stock from invoice photos",
+  "serverStatus": "Server status",
+  "serverChecking": "Checking…",
+  "serverOk": "Connected",
+  "serverDown": "Not reachable",
+  "language": "Language"
+}

@@ -1,0 +1,9 @@
+{
+  "appTitle": "餐厅库存",
+  "tagline": "拍下发票，自动记录库存",
+  "serverStatus": "服务器状态",
+  "serverChecking": "检查中…",
+  "serverOk": "已连接",
+  "serverDown": "无法连接",
+  "language": "语言"
+}

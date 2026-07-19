@@ -1,0 +1,9 @@
+{
+  "appTitle": "Inventaire Restaurant",
+  "tagline": "Suivez vos stocks à partir de photos de factures",
+  "serverStatus": "Statut du serveur",
+  "serverChecking": "Vérification…",
+  "serverOk": "Connecté",
+  "serverDown": "Injoignable",
+  "language": "Langue"
+}
