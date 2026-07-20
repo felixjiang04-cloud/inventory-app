@@ -8,6 +8,7 @@ Canonical base units: 'g' (weight), 'ml' (volume), 'each' (count).
 Quantities are stored as integers of these base units.
 """
 
+import re
 from fractions import Fraction
 
 # spelling (lowercased) -> (base unit, base units per 1 of this unit)
@@ -44,6 +45,35 @@ CONVERSIONS: dict[str, tuple[str, Fraction]] = {
 
 class UnknownUnitError(ValueError):
     """The unit spelling is not in the hand-written table."""
+
+
+# Matches "5KG", "3 l", "2,5 kg", "398ml" ... — a number followed by a unit
+# spelling from the table above. Longest spellings first so "ml" wins over "l".
+_SIZE_TOKEN = re.compile(
+    r"(\d+(?:[.,]\d+)?)\s*("
+    + "|".join(
+        re.escape(u) for u in sorted(CONVERSIONS, key=len, reverse=True)
+    )
+    + r")(?![a-z])",
+    re.IGNORECASE,
+)
+
+
+def guess_qty_per_unit(raw_text: str) -> tuple[str, int] | None:
+    """Suggest a size from invoice line text, e.g. "ROMA TOM 5KG" -> ('g', 5000).
+
+    Uses the LAST size token in the text (sizes usually trail the name).
+    Only a hint for the review screen — the owner always confirms the
+    number before it is stored. Returns None when nothing matches.
+    """
+    matches = _SIZE_TOKEN.findall(raw_text)
+    if not matches:
+        return None
+    number_text, unit = matches[-1]
+    quantity = Fraction(number_text.replace(",", "."))
+    if quantity <= 0:
+        return None
+    return to_canonical(quantity, unit)
 
 
 def to_canonical(quantity: Fraction, unit: str) -> tuple[str, int]:
