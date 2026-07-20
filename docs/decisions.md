@@ -35,3 +35,16 @@ Newest entries at the bottom.
   after. Handles pack sizes with no model at runtime.
 - **Tests run on a Neon "test" branch** of the real database, each test
   in a rolled-back transaction — realistic Postgres, zero leftover data.
+
+## 2026-07-20 — Review workflow (Stage 3)
+
+- **pg_trgm fuzzy matching.** Item suggestions come from Postgres
+  trigram similarity over catalog names and confirmed aliases —
+  deterministic, indexed, explainable, no model call.
+- **API errors are i18n payloads.** Every error is {code, context}
+  (e.g. invoiceError.totalMismatch + the two amounts in cents); the
+  frontend translates and formats. No English sentences from the server.
+- **Manual entry form is permanent.** Built as the Stage 3 invoice
+  source; stays as the fallback when OCR misreads a photo.
+- **User-typed money parsed server-side** by the same deterministic
+  parse_money used everywhere ("25,00" and "$1,234.56" both work).

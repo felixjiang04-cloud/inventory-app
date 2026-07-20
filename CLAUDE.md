@@ -41,4 +41,4 @@ Solo founder, non-expert programmer, learning as we build.
 - Prefer boring, readable code over clever code.
 
 ## Current milestone
-Stage 2: ledger schema and core operations (done); next: Stage 3 review/confirm UI
+Stage 3: review/confirm UI (done); next: Stage 4 photo upload + GLM-OCR extraction
