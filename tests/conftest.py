@@ -24,3 +24,21 @@ def conn(test_db_url):
     with get_connection(test_db_url) as connection:
         with connection.transaction(force_rollback=True):
             yield connection
+
+
+@pytest.fixture
+def client(conn):
+    """API test client whose requests share the rolled-back test connection."""
+    from fastapi.testclient import TestClient
+
+    from app.deps import get_db
+    from app.main import app
+
+    def override():
+        yield conn
+
+    app.dependency_overrides[get_db] = override
+    try:
+        yield TestClient(app)
+    finally:
+        app.dependency_overrides.clear()
