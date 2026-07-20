@@ -1,26 +1,181 @@
-main {
-  max-width: 40rem;
-  margin: 4rem auto;
-  padding: 0 1rem;
-  text-align: center;
-}
-
-nav {
+header {
   display: flex;
-  gap: 0.5rem;
-  justify-content: center;
-  margin-top: 2rem;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  padding: 0.75rem 1rem;
+  background: #fff;
+  border-bottom: 1px solid #e0e0e0;
 }
 
-nav button {
-  padding: 0.4rem 1.1rem;
-  font-size: 1rem;
+.brand {
+  font-weight: bold;
+}
+
+header nav {
+  display: flex;
+  gap: 0.75rem;
+}
+
+header nav a {
+  text-decoration: none;
+  color: #1a4d8f;
+}
+
+header nav a.active {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+header .lang {
+  margin-left: auto;
+}
+
+main {
+  max-width: 44rem;
+  margin: 1.5rem auto 4rem;
+  padding: 0 1rem;
+}
+
+.home {
+  text-align: center;
+  margin-top: 3rem;
+}
+
+button {
+  padding: 0.35rem 0.9rem;
+  font-size: 0.95rem;
   cursor: pointer;
 }
 
-nav button:disabled {
+button:disabled {
   cursor: default;
-  font-weight: bold;
+  opacity: 0.6;
+}
+
+form label,
+section label {
+  display: block;
+  margin: 0.8rem 0 0.3rem;
+}
+
+input,
+select {
+  padding: 0.35rem 0.5rem;
+  font-size: 0.95rem;
+  max-width: 100%;
+}
+
+.row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.line-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.line-row input:first-child {
+  flex: 1;
+  min-width: 12rem;
+}
+
+.narrow {
+  width: 7rem;
+}
+
+.totals {
+  margin-top: 1rem;
+}
+
+.error-box {
+  background: #fdecea;
+  border: 1px solid #c62828;
+  color: #8e1c1c;
+  padding: 0.6rem 0.9rem;
+  border-radius: 4px;
+  margin: 0.8rem 0;
+}
+
+.error-box p {
+  margin: 0.2rem 0;
+}
+
+.success-box {
+  background: #e8f5e9;
+  border: 1px solid #1a7f37;
+  color: #14532d;
+  padding: 0.6rem 0.9rem;
+  border-radius: 4px;
+}
+
+.queue {
+  list-style: none;
+  padding: 0;
+}
+
+.queue li {
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  margin-bottom: 0.6rem;
+  background: #fff;
+}
+
+.queue a {
+  display: block;
+  padding: 0.7rem 0.9rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.badge {
+  margin-left: 0.6rem;
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+}
+
+.badge.pending {
+  background: #fff3cd;
+  border: 1px solid #b8860b;
+}
+
+.badge.done {
+  background: #e8f5e9;
+  border: 1px solid #1a7f37;
+}
+
+.line-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background: #fff;
+  padding: 0.8rem 0.9rem;
+  margin-bottom: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.line-card.confirmed {
+  background: #f4faf5;
+  border-color: #1a7f37;
+}
+
+.chip {
+  border-radius: 999px;
+  margin: 0 0.25rem 0.25rem 0;
+  background: #eef3fb;
+  border: 1px solid #1a4d8f;
+}
+
+.muted {
+  color: #666;
+  font-size: 0.9rem;
 }
 
 .status-ok {

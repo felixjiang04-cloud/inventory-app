@@ -5,5 +5,100 @@
   "serverChecking": "Checking…",
   "serverOk": "Connected",
   "serverDown": "Not reachable",
-  "language": "Language"
+  "language": "Language",
+  "nav": {
+    "home": "Home",
+    "newInvoice": "New invoice",
+    "review": "Review"
+  },
+  "common": {
+    "loading": "Loading…",
+    "cancel": "Cancel",
+    "remove": "Remove"
+  },
+  "unit": {
+    "g": "grams (g)",
+    "ml": "milliliters (ml)",
+    "each": "units (each)"
+  },
+  "field": {
+    "subtotal": "subtotal",
+    "gst": "GST",
+    "qst": "QST",
+    "other_tax": "other tax",
+    "total": "total",
+    "quantity": "quantity",
+    "line_total": "line total"
+  },
+  "newInvoice": {
+    "title": "New invoice",
+    "supplier": "Supplier",
+    "chooseSupplier": "Choose a supplier…",
+    "newSupplier": "+ New supplier",
+    "supplierName": "Supplier name",
+    "create": "Create",
+    "invoiceDate": "Invoice date",
+    "invoiceNumber": "Invoice number (optional)",
+    "lines": "Lines",
+    "rawText": "Text as printed",
+    "quantity": "Qty",
+    "lineTotal": "Line total",
+    "addLine": "+ Add line",
+    "subtotal": "Subtotal",
+    "gst": "GST",
+    "qst": "QST",
+    "otherTax": "Other tax",
+    "total": "Total as printed",
+    "submit": "Save invoice",
+    "saved": "Invoice saved — it is waiting in the review queue.",
+    "goReview": "Go to review"
+  },
+  "review": {
+    "title": "Review queue",
+    "empty": "Nothing to review — all invoices are posted.",
+    "linesToConfirm": "{{count}} line(s) to confirm",
+    "allConfirmed": "All lines confirmed",
+    "date": "Date",
+    "supplier": "Supplier",
+    "total": "Total",
+    "open": "Open",
+    "suggestions": "Suggestions",
+    "noSuggestions": "No suggestions — pick an item or create one.",
+    "chooseItem": "Choose an item…",
+    "createNewItem": "+ New item",
+    "itemName": "Item name",
+    "baseUnit": "Counted in",
+    "qtyPerUnit": "One invoice unit = how many {{unit}}?",
+    "confirmLine": "Confirm",
+    "confirmedAs": "{{qty}} recorded",
+    "post": "Post to ledger",
+    "posted": "Posted! New stock levels:",
+    "backToQueue": "Back to the queue"
+  },
+  "invoiceError": {
+    "noLines": "The invoice has no lines.",
+    "negativeAmount": "Amounts cannot be negative.",
+    "lineTotalsMismatch": "The lines add up to {{linesSum}}, but the subtotal says {{subtotal}}.",
+    "totalMismatch": "Subtotal plus taxes is {{parts}}, but the printed total says {{total}}.",
+    "badNumber": "Unreadable number in \"{{field}}\".",
+    "badNumberLine": "Line {{line}}: unreadable {{field}}."
+  },
+  "ledgerError": {
+    "unconfirmedLines": "Some lines are not confirmed yet.",
+    "invoiceNotPending": "This invoice is not awaiting review.",
+    "invoiceNotFound": "Invoice not found.",
+    "validationFailed": "The invoice numbers do not add up.",
+    "stocktakeNotFound": "Stocktake not found.",
+    "stocktakeAlreadyPosted": "This stocktake is already posted.",
+    "entryNotFound": "Ledger entry not found.",
+    "alreadyReversed": "This entry was already reversed."
+  },
+  "apiError": {
+    "duplicateName": "\"{{name}}\" already exists.",
+    "supplierNotFound": "Supplier not found.",
+    "itemNotFound": "Item not found.",
+    "invoiceNotFound": "Invoice not found.",
+    "lineNotFound": "Line not found.",
+    "unknown": "Something went wrong."
+  }
 }

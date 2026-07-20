@@ -5,5 +5,100 @@
   "serverChecking": "检查中…",
   "serverOk": "已连接",
   "serverDown": "无法连接",
-  "language": "语言"
+  "language": "语言",
+  "nav": {
+    "home": "首页",
+    "newInvoice": "新发票",
+    "review": "审核"
+  },
+  "common": {
+    "loading": "加载中…",
+    "cancel": "取消",
+    "remove": "删除"
+  },
+  "unit": {
+    "g": "克 (g)",
+    "ml": "毫升 (ml)",
+    "each": "个"
+  },
+  "field": {
+    "subtotal": "小计",
+    "gst": "GST 税",
+    "qst": "QST 税",
+    "other_tax": "其他税",
+    "total": "总计",
+    "quantity": "数量",
+    "line_total": "行金额"
+  },
+  "newInvoice": {
+    "title": "录入新发票",
+    "supplier": "供应商",
+    "chooseSupplier": "选择供应商…",
+    "newSupplier": "+ 新供应商",
+    "supplierName": "供应商名称",
+    "create": "创建",
+    "invoiceDate": "发票日期",
+    "invoiceNumber": "发票号（可选）",
+    "lines": "明细行",
+    "rawText": "按发票原文填写",
+    "quantity": "数量",
+    "lineTotal": "行金额",
+    "addLine": "+ 添加一行",
+    "subtotal": "小计",
+    "gst": "GST 税",
+    "qst": "QST 税",
+    "otherTax": "其他税",
+    "total": "发票总计",
+    "submit": "保存发票",
+    "saved": "发票已保存，正在审核队列中等待。",
+    "goReview": "去审核"
+  },
+  "review": {
+    "title": "审核队列",
+    "empty": "没有待审核的发票 — 全部已入账。",
+    "linesToConfirm": "{{count}} 行待确认",
+    "allConfirmed": "所有行已确认",
+    "date": "日期",
+    "supplier": "供应商",
+    "total": "总计",
+    "open": "打开",
+    "suggestions": "匹配建议",
+    "noSuggestions": "没有建议 — 请选择或新建一个货品。",
+    "chooseItem": "选择货品…",
+    "createNewItem": "+ 新货品",
+    "itemName": "货品名称",
+    "baseUnit": "计量单位",
+    "qtyPerUnit": "发票上的 1 件 = 多少{{unit}}？",
+    "confirmLine": "确认",
+    "confirmedAs": "已记录 {{qty}}",
+    "post": "入账",
+    "posted": "已入账！最新库存：",
+    "backToQueue": "返回队列"
+  },
+  "invoiceError": {
+    "noLines": "发票没有明细行。",
+    "negativeAmount": "金额不能为负数。",
+    "lineTotalsMismatch": "各行合计为 {{linesSum}}，但小计为 {{subtotal}}。",
+    "totalMismatch": "小计加税为 {{parts}}，但发票总计为 {{total}}。",
+    "badNumber": "「{{field}}」中的数字无法识别。",
+    "badNumberLine": "第 {{line}} 行：{{field}}无法识别。"
+  },
+  "ledgerError": {
+    "unconfirmedLines": "还有明细行未确认。",
+    "invoiceNotPending": "这张发票不在待审核状态。",
+    "invoiceNotFound": "找不到该发票。",
+    "validationFailed": "发票金额对不上。",
+    "stocktakeNotFound": "找不到该盘点。",
+    "stocktakeAlreadyPosted": "该盘点已入账。",
+    "entryNotFound": "找不到该台账记录。",
+    "alreadyReversed": "该记录已被冲销。"
+  },
+  "apiError": {
+    "duplicateName": "「{{name}}」已存在。",
+    "supplierNotFound": "找不到该供应商。",
+    "itemNotFound": "找不到该货品。",
+    "invoiceNotFound": "找不到该发票。",
+    "lineNotFound": "找不到该明细行。",
+    "unknown": "出错了，请重试。"
+  }
 }

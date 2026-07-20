@@ -5,5 +5,100 @@
   "serverChecking": "Vérification…",
   "serverOk": "Connecté",
   "serverDown": "Injoignable",
-  "language": "Langue"
+  "language": "Langue",
+  "nav": {
+    "home": "Accueil",
+    "newInvoice": "Nouvelle facture",
+    "review": "Révision"
+  },
+  "common": {
+    "loading": "Chargement…",
+    "cancel": "Annuler",
+    "remove": "Retirer"
+  },
+  "unit": {
+    "g": "grammes (g)",
+    "ml": "millilitres (ml)",
+    "each": "unités (à l'unité)"
+  },
+  "field": {
+    "subtotal": "sous-total",
+    "gst": "TPS",
+    "qst": "TVQ",
+    "other_tax": "autre taxe",
+    "total": "total",
+    "quantity": "quantité",
+    "line_total": "total de ligne"
+  },
+  "newInvoice": {
+    "title": "Nouvelle facture",
+    "supplier": "Fournisseur",
+    "chooseSupplier": "Choisir un fournisseur…",
+    "newSupplier": "+ Nouveau fournisseur",
+    "supplierName": "Nom du fournisseur",
+    "create": "Créer",
+    "invoiceDate": "Date de la facture",
+    "invoiceNumber": "Numéro de facture (facultatif)",
+    "lines": "Lignes",
+    "rawText": "Texte tel qu'imprimé",
+    "quantity": "Qté",
+    "lineTotal": "Total de ligne",
+    "addLine": "+ Ajouter une ligne",
+    "subtotal": "Sous-total",
+    "gst": "TPS",
+    "qst": "TVQ",
+    "otherTax": "Autre taxe",
+    "total": "Total imprimé",
+    "submit": "Enregistrer la facture",
+    "saved": "Facture enregistrée — elle attend dans la file de révision.",
+    "goReview": "Aller à la révision"
+  },
+  "review": {
+    "title": "File de révision",
+    "empty": "Rien à réviser — toutes les factures sont comptabilisées.",
+    "linesToConfirm": "{{count}} ligne(s) à confirmer",
+    "allConfirmed": "Toutes les lignes sont confirmées",
+    "date": "Date",
+    "supplier": "Fournisseur",
+    "total": "Total",
+    "open": "Ouvrir",
+    "suggestions": "Suggestions",
+    "noSuggestions": "Aucune suggestion — choisissez un article ou créez-en un.",
+    "chooseItem": "Choisir un article…",
+    "createNewItem": "+ Nouvel article",
+    "itemName": "Nom de l'article",
+    "baseUnit": "Compté en",
+    "qtyPerUnit": "Une unité facturée = combien de {{unit}} ?",
+    "confirmLine": "Confirmer",
+    "confirmedAs": "{{qty}} enregistré",
+    "post": "Comptabiliser",
+    "posted": "Comptabilisée ! Nouveaux niveaux de stock :",
+    "backToQueue": "Retour à la file"
+  },
+  "invoiceError": {
+    "noLines": "La facture n'a aucune ligne.",
+    "negativeAmount": "Les montants ne peuvent pas être négatifs.",
+    "lineTotalsMismatch": "Les lignes totalisent {{linesSum}}, mais le sous-total indique {{subtotal}}.",
+    "totalMismatch": "Sous-total plus taxes donne {{parts}}, mais le total imprimé indique {{total}}.",
+    "badNumber": "Nombre illisible dans « {{field}} ».",
+    "badNumberLine": "Ligne {{line}} : {{field}} illisible."
+  },
+  "ledgerError": {
+    "unconfirmedLines": "Certaines lignes ne sont pas encore confirmées.",
+    "invoiceNotPending": "Cette facture n'est pas en attente de révision.",
+    "invoiceNotFound": "Facture introuvable.",
+    "validationFailed": "Les montants de la facture ne concordent pas.",
+    "stocktakeNotFound": "Inventaire introuvable.",
+    "stocktakeAlreadyPosted": "Cet inventaire est déjà comptabilisé.",
+    "entryNotFound": "Écriture introuvable.",
+    "alreadyReversed": "Cette écriture a déjà été contrepassée."
+  },
+  "apiError": {
+    "duplicateName": "« {{name}} » existe déjà.",
+    "supplierNotFound": "Fournisseur introuvable.",
+    "itemNotFound": "Article introuvable.",
+    "invoiceNotFound": "Facture introuvable.",
+    "lineNotFound": "Ligne introuvable.",
+    "unknown": "Une erreur est survenue."
+  }
 }

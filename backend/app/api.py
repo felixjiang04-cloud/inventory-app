@@ -138,7 +138,15 @@ def create_invoice(body: InvoiceIn, conn: psycopg.Connection = Depends(get_db)):
                 }
             )
             quantity = Fraction(1)
-        cents = money(f"line_total:{index + 1}", line.line_total)
+        cents = parse_money(line.line_total)
+        if cents is None:
+            field_errors.append(
+                {
+                    "code": "invoiceError.badNumber",
+                    "context": {"field": "line_total", "line": index + 1},
+                }
+            )
+            cents = 0
         parsed_lines.append((line.raw_text.strip(), quantity, cents))
 
     if field_errors:
