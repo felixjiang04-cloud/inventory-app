@@ -99,6 +99,7 @@
     "itemNotFound": "Item not found.",
     "invoiceNotFound": "Invoice not found.",
     "lineNotFound": "Line not found.",
-    "unknown": "Something went wrong."
+    "unknown": "Something went wrong.",
+    "network": "Could not reach the server. Check your connection and try again."
   }
 }

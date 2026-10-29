@@ -22,14 +22,44 @@ export class ApiError extends Error {
   }
 }
 
+// A gateway in front of the backend answers with these when the backend
+// itself is down or unreachable.
+const GATEWAY_STATUSES = [502, 503, 504]
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(path, {
-    headers: { 'Content-Type': 'application/json' },
-    ...init,
-  })
-  const payload = response.status === 204 ? null : await response.json()
+  let response: Response
+  try {
+    response = await fetch(path, {
+      headers: { 'Content-Type': 'application/json' },
+      ...init,
+    })
+  } catch {
+    // fetch only rejects when no answer arrived at all (offline, server down)
+    throw new ApiError({ code: 'apiError.network' }, 0)
+  }
+  if (GATEWAY_STATUSES.includes(response.status)) {
+    throw new ApiError({ code: 'apiError.network' }, response.status)
+  }
+
+  let payload: unknown = null
+  if (response.status !== 204) {
+    try {
+      payload = await response.json()
+    } catch {
+      // not JSON (e.g. a plain-text crash page): nothing more specific to show
+      throw new ApiError(null, response.status)
+    }
+  }
   if (!response.ok) throw new ApiError(payload, response.status)
   return payload as T
+}
+
+// Anything a failed API call can throw, as an ApiError the UI can display.
+// Never drop an error silently: the user must see that something failed.
+export function toApiError(error: unknown): ApiError {
+  if (error instanceof ApiError) return error
+  console.error(error) // a bug in our own code — keep the details for debugging
+  return new ApiError(null, 0)
 }
 
 export const api = {

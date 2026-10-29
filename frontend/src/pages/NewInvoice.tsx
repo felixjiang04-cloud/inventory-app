@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
-import { api, ApiError } from '../api'
+import { api, ApiError, toApiError } from '../api'
 import type { Supplier } from '../api'
 import ErrorMessage from '../components/ErrorMessage'
 
@@ -33,7 +33,10 @@ export default function NewInvoice() {
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
-    api.get<Supplier[]>('/api/suppliers').then(setSuppliers).catch(() => {})
+    api
+      .get<Supplier[]>('/api/suppliers')
+      .then(setSuppliers)
+      .catch((e) => setError(toApiError(e)))
   }, [])
 
   const setLine = (index: number, patch: Partial<LineDraft>) =>
@@ -51,7 +54,7 @@ export default function NewInvoice() {
       setCreatingSupplier(false)
       setNewSupplierName('')
     } catch (e) {
-      if (e instanceof ApiError) setError(e)
+      setError(toApiError(e))
     }
   }
 
@@ -73,7 +76,7 @@ export default function NewInvoice() {
       })
       setSavedId(result.id)
     } catch (e) {
-      if (e instanceof ApiError) setError(e)
+      setError(toApiError(e))
     } finally {
       setBusy(false)
     }

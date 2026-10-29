@@ -99,6 +99,7 @@
     "itemNotFound": "Article introuvable.",
     "invoiceNotFound": "Facture introuvable.",
     "lineNotFound": "Ligne introuvable.",
-    "unknown": "Une erreur est survenue."
+    "unknown": "Une erreur est survenue.",
+    "network": "Impossible de joindre le serveur. Vérifiez votre connexion et réessayez."
   }
 }

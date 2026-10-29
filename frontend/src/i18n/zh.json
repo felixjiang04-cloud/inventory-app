@@ -99,6 +99,7 @@
     "itemNotFound": "找不到该货品。",
     "invoiceNotFound": "找不到该发票。",
     "lineNotFound": "找不到该明细行。",
-    "unknown": "出错了，请重试。"
+    "unknown": "出错了，请重试。",
+    "network": "无法连接服务器，请检查网络后重试。"
   }
 }

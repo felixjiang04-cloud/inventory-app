@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 
-import { api, ApiError } from '../api'
+import { api, ApiError, toApiError } from '../api'
 import type {
   InvoiceDetail,
   InvoiceLine,
@@ -44,7 +44,7 @@ function LineCard({
       api
         .get<Suggestion[]>(`/api/invoice-lines/${line.id}/suggestions`)
         .then(setSuggestions)
-        .catch(() => {})
+        .catch((e) => setError(toApiError(e)))
     }
   }, [line.id, confirmed])
 
@@ -74,7 +74,7 @@ function LineCard({
       setItemId(String(item.id))
       setCreating(false)
     } catch (e) {
-      if (e instanceof ApiError) setError(e)
+      setError(toApiError(e))
     }
   }
 
@@ -87,7 +87,7 @@ function LineCard({
       })
       onConfirmed()
     } catch (e) {
-      if (e instanceof ApiError) setError(e)
+      setError(toApiError(e))
     }
   }
 
@@ -192,19 +192,36 @@ export default function ReviewInvoice() {
   const [invoice, setInvoice] = useState<InvoiceDetail | null>(null)
   const [items, setItems] = useState<Item[]>([])
   const [error, setError] = useState<ApiError | null>(null)
+  // loading the invoice or the item list failed (shown at the top)
+  const [loadError, setLoadError] = useState<ApiError | null>(null)
   const [posted, setPosted] = useState<PostResult | null>(null)
   const language = i18n.resolvedLanguage ?? 'en'
 
   const reload = useCallback(() => {
-    api.get<InvoiceDetail>(`/api/invoices/${id}`).then(setInvoice).catch(() => {})
+    api
+      .get<InvoiceDetail>(`/api/invoices/${id}`)
+      .then((detail) => {
+        setInvoice(detail)
+        setLoadError(null)
+      })
+      .catch((e) => setLoadError(toApiError(e)))
   }, [id])
 
   useEffect(() => {
     reload()
-    api.get<Item[]>('/api/items').then(setItems).catch(() => {})
+    api
+      .get<Item[]>('/api/items')
+      .then(setItems)
+      .catch((e) => setLoadError(toApiError(e)))
   }, [reload])
 
-  if (invoice === null) return <p>{t('common.loading')}</p>
+  if (invoice === null) {
+    return loadError ? (
+      <ErrorMessage error={loadError} />
+    ) : (
+      <p>{t('common.loading')}</p>
+    )
+  }
 
   const unconfirmed = invoice.lines.filter((l) => l.item_id === null).length
 
@@ -233,7 +250,7 @@ export default function ReviewInvoice() {
     try {
       setPosted(await api.post<PostResult>(`/api/invoices/${invoice!.id}/post`, {}))
     } catch (e) {
-      if (e instanceof ApiError) setError(e)
+      setError(toApiError(e))
     }
   }
 
@@ -247,6 +264,8 @@ export default function ReviewInvoice() {
         {t('review.date')}: {invoice.invoice_date} · {t('review.total')}:{' '}
         {formatCents(invoice.total_cents, language)}
       </p>
+
+      <ErrorMessage error={loadError} />
 
       {invoice.lines.map((line) => (
         <LineCard

@@ -2,19 +2,27 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
-import { api } from '../api'
+import { api, ApiError, toApiError } from '../api'
 import type { QueueInvoice } from '../api'
+import ErrorMessage from '../components/ErrorMessage'
 import { formatCents } from '../format'
 
 export default function ReviewQueue() {
   const { t, i18n } = useTranslation()
   const [invoices, setInvoices] = useState<QueueInvoice[] | null>(null)
+  const [error, setError] = useState<ApiError | null>(null)
   const language = i18n.resolvedLanguage ?? 'en'
 
   useEffect(() => {
-    api.get<QueueInvoice[]>('/api/invoices').then(setInvoices).catch(() => setInvoices([]))
+    // On failure, show the error — NOT an empty list, which would falsely
+    // tell the owner "nothing to review".
+    api
+      .get<QueueInvoice[]>('/api/invoices')
+      .then(setInvoices)
+      .catch((e) => setError(toApiError(e)))
   }, [])
 
+  if (error) return <ErrorMessage error={error} />
   if (invoices === null) return <p>{t('common.loading')}</p>
 
   return (
