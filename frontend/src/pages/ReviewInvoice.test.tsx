@@ -19,6 +19,7 @@ const invoice: InvoiceDetail = {
   other_tax_cents: 0,
   total_cents: 3000,
   status: 'pending_review',
+  photo_id: null,
   lines: [
     {
       id: 10,
