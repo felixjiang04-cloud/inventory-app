@@ -8,6 +8,7 @@ Validation errors carry i18n keys (e.g. "invoiceError.noLines"), not
 English text — the frontend translates them.
 """
 
+import datetime
 import re
 from dataclasses import dataclass, field
 from decimal import Decimal, InvalidOperation
@@ -15,6 +16,8 @@ from fractions import Fraction
 
 import psycopg
 from psycopg import errors
+
+from app.config import settings
 
 
 # ---------------------------------------------------------------------------
@@ -237,14 +240,20 @@ def post_invoice(conn: psycopg.Connection, invoice_id: int) -> list[int]:
     return entry_ids
 
 
-def item_balance(conn: psycopg.Connection, item_id: int) -> Balance:
+def item_balance(
+    conn: psycopg.Connection, item_id: int, as_of: datetime.date | None = None
+) -> Balance:
+    """Sum of an item's entries — all of them, or only those dated on or
+    before `as_of` (the balance at the end of that day)."""
     row = conn.execute(
         """
         SELECT COALESCE(SUM(qty_delta), 0) AS qty,
                COALESCE(SUM(cost_delta_cents), 0) AS cost
-        FROM ledger_entries WHERE item_id = %s
+        FROM ledger_entries
+        WHERE item_id = %s
+          AND (%s::date IS NULL OR occurred_on <= %s::date)
         """,
-        (item_id,),
+        (item_id, as_of, as_of),
     ).fetchone()
     return Balance(qty=row["qty"], cost_cents=row["cost"])
 
@@ -267,12 +276,19 @@ def all_balances(conn: psycopg.Connection) -> dict[int, Balance]:
 def post_stocktake(conn: psycopg.Connection, stocktake_id: int) -> list[int]:
     """Record counted stock levels as adjustment entries.
 
-    For each counted item: delta = counted - current balance. Cost is
-    untouched — a stocktake corrects quantity, not money spent.
+    For each counted item: delta = counted - balance at the END OF THE
+    COUNT DAY. Not the balance now: an invoice dated after the count but
+    posted before this stocktake would otherwise be wrongly cancelled out.
+    Cost is untouched — a stocktake corrects quantity, not money spent.
     """
     with conn.transaction():
+        # count_date = the calendar day of the count, in the restaurant's zone
         stocktake = conn.execute(
-            "SELECT * FROM stocktakes WHERE id = %s FOR UPDATE", (stocktake_id,)
+            """
+            SELECT *, (taken_at AT TIME ZONE %s)::date AS count_date
+            FROM stocktakes WHERE id = %s FOR UPDATE
+            """,
+            (settings.restaurant_timezone, stocktake_id),
         ).fetchone()
         if stocktake is None:
             raise LedgerError(
@@ -289,7 +305,7 @@ def post_stocktake(conn: psycopg.Connection, stocktake_id: int) -> list[int]:
         entry_ids = []
         for line in lines:
             delta = line["counted_qty_canonical"] - item_balance(
-                conn, line["item_id"]
+                conn, line["item_id"], as_of=stocktake["count_date"]
             ).qty
             if delta == 0:
                 continue
@@ -305,7 +321,7 @@ def post_stocktake(conn: psycopg.Connection, stocktake_id: int) -> list[int]:
                 (
                     line["item_id"],
                     delta,
-                    stocktake["taken_at"].date(),
+                    stocktake["count_date"],
                     line["id"],
                 ),
             ).fetchone()
@@ -335,7 +351,8 @@ def reverse_entry(conn: psycopg.Connection, entry_id: int) -> int:
                 INSERT INTO ledger_entries
                     (item_id, entry_type, qty_delta, cost_delta_cents,
                      occurred_on, source_type, source_id, reverses_entry_id)
-                VALUES (%s, 'reversal', %s, %s, CURRENT_DATE,
+                VALUES (%s, 'reversal', %s, %s,
+                        (now() AT TIME ZONE %s)::date,  -- today, restaurant time
                         'ledger_entry', %s, %s)
                 RETURNING id
                 """,
@@ -343,6 +360,7 @@ def reverse_entry(conn: psycopg.Connection, entry_id: int) -> int:
                     entry["item_id"],
                     -entry["qty_delta"],
                     -entry["cost_delta_cents"],
+                    settings.restaurant_timezone,
                     entry_id,
                     entry_id,
                 ),

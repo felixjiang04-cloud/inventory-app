@@ -18,6 +18,14 @@ from app.ledger import (
     post_stocktake,
     reverse_entry,
 )
+from app.config import settings
+
+
+@pytest.fixture(autouse=True)
+def montreal_time(monkeypatch):
+    """These tests are written in Montreal local time, whatever .env says."""
+    monkeypatch.setattr(settings, "restaurant_timezone", "America/Toronto")
+
 
 # --- seed helpers ----------------------------------------------------------
 
@@ -35,7 +43,14 @@ def make_item(conn, name: str, base_unit: str = "g") -> int:
     ).fetchone()["id"]
 
 
-def make_invoice(conn, supplier_id: int, lines, gst: int = 0, qst: int = 0) -> int:
+def make_invoice(
+    conn,
+    supplier_id: int,
+    lines,
+    gst: int = 0,
+    qst: int = 0,
+    invoice_date: datetime.date = datetime.date(2026, 7, 15),
+) -> int:
     """lines: list of (raw_text, quantity, line_total_cents, item_id, qty_canonical)."""
     subtotal = sum(line[2] for line in lines)
     invoice_id = conn.execute(
@@ -46,7 +61,7 @@ def make_invoice(conn, supplier_id: int, lines, gst: int = 0, qst: int = 0) -> i
         """,
         (
             supplier_id,
-            datetime.date(2026, 7, 15),
+            invoice_date,
             subtotal,
             gst,
             qst,
@@ -65,9 +80,14 @@ def make_invoice(conn, supplier_id: int, lines, gst: int = 0, qst: int = 0) -> i
     return invoice_id
 
 
-def make_stocktake(conn, counts: dict[int, int]) -> int:
+def make_stocktake(conn, counts: dict[int, int], taken_at: str | None = None) -> int:
+    """taken_at: e.g. "2026-07-20 23:30 America/Toronto"; default = now."""
     stocktake_id = conn.execute(
-        "INSERT INTO stocktakes DEFAULT VALUES RETURNING id"
+        """
+        INSERT INTO stocktakes (taken_at)
+        VALUES (COALESCE(%s::timestamptz, now())) RETURNING id
+        """,
+        (taken_at,),
     ).fetchone()["id"]
     for item_id, counted in counts.items():
         conn.execute(
@@ -157,6 +177,97 @@ def test_stocktake_matching_balance_writes_nothing(conn) -> None:
     stocktake = make_stocktake(conn, {rice: 10000})
     assert post_stocktake(conn, stocktake) == []
     assert item_balance(conn, rice) == Balance(qty=10000, cost_cents=2000)
+
+
+def test_stocktake_ignores_invoice_dated_after_the_count(conn) -> None:
+    # Count on Jul 20; a delivery dated Jul 21 gets posted BEFORE the count
+    # is posted. The count must be compared with the Jul 20 balance only.
+    supplier = make_supplier(conn)
+    rice = make_item(conn, "Riz")
+    post_invoice(conn, make_invoice(conn, supplier, [("RIZ 10KG", 1, 2000, rice, 10000)]))
+    stocktake = make_stocktake(
+        conn, {rice: 3800}, taken_at="2026-07-20 15:00 America/Toronto"
+    )
+    later = make_invoice(
+        conn,
+        supplier,
+        [("RIZ 5KG", 1, 1000, rice, 5000)],
+        invoice_date=datetime.date(2026, 7, 21),
+    )
+    post_invoice(conn, later)
+
+    post_stocktake(conn, stocktake)
+
+    # what was counted, plus the delivery that came after the count
+    assert item_balance(conn, rice).qty == 3800 + 5000
+    assert item_balance(conn, rice, as_of=datetime.date(2026, 7, 20)).qty == 3800
+
+
+def test_stocktake_treats_same_day_invoice_as_already_counted(conn) -> None:
+    # End-of-day rule: goods invoiced on the count day were on the shelf.
+    supplier = make_supplier(conn)
+    rice = make_item(conn, "Riz")
+    post_invoice(conn, make_invoice(conn, supplier, [("RIZ 10KG", 1, 2000, rice, 10000)]))
+    same_day = make_invoice(
+        conn,
+        supplier,
+        [("RIZ 5KG", 1, 1000, rice, 5000)],
+        invoice_date=datetime.date(2026, 7, 20),
+    )
+    post_invoice(conn, same_day)
+    stocktake = make_stocktake(
+        conn, {rice: 3800}, taken_at="2026-07-20 15:00 America/Toronto"
+    )
+
+    post_stocktake(conn, stocktake)
+
+    assert item_balance(conn, rice).qty == 3800
+
+
+def test_late_evening_count_is_dated_in_restaurant_time(conn) -> None:
+    # 23:30 in Montreal is already 03:30 the next day in UTC.
+    supplier = make_supplier(conn)
+    rice = make_item(conn, "Riz")
+    post_invoice(conn, make_invoice(conn, supplier, [("RIZ 10KG", 1, 2000, rice, 10000)]))
+    next_morning = make_invoice(
+        conn,
+        supplier,
+        [("RIZ 5KG", 1, 1000, rice, 5000)],
+        invoice_date=datetime.date(2026, 7, 21),
+    )
+    post_invoice(conn, next_morning)
+    stocktake = make_stocktake(
+        conn, {rice: 3800}, taken_at="2026-07-20 23:30 America/Toronto"
+    )
+
+    (entry_id,) = post_stocktake(conn, stocktake)
+
+    entry = conn.execute(
+        "SELECT occurred_on, qty_delta FROM ledger_entries WHERE id = %s",
+        (entry_id,),
+    ).fetchone()
+    assert entry["occurred_on"] == datetime.date(2026, 7, 20)
+    assert entry["qty_delta"] == 3800 - 10000  # next morning's delivery excluded
+
+
+def test_reversal_is_dated_today_in_restaurant_time(conn) -> None:
+    supplier = make_supplier(conn)
+    rice = make_item(conn, "Riz")
+    (entry_id,) = post_invoice(
+        conn, make_invoice(conn, supplier, [("RIZ 10KG", 1, 2000, rice, 10000)])
+    )
+
+    reversal_id = reverse_entry(conn, entry_id)
+
+    row = conn.execute(
+        """
+        SELECT occurred_on = (now() AT TIME ZONE 'America/Toronto')::date
+               AS is_local_today
+        FROM ledger_entries WHERE id = %s
+        """,
+        (reversal_id,),
+    ).fetchone()
+    assert row["is_local_today"]
 
 
 def test_reversal_restores_balance_and_cannot_repeat(conn) -> None:
