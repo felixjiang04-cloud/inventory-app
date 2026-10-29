@@ -47,7 +47,11 @@ def make_client(conn):
     from app.main import app
 
     def override():
-        yield conn
+        # Like the real get_db: a request that raises leaves nothing behind.
+        # Here that is a savepoint rolled back (the test's own transaction
+        # stays open), so tests never keep writes that production undoes.
+        with conn.transaction():
+            yield conn
 
     app.dependency_overrides[get_db] = override
     try:
