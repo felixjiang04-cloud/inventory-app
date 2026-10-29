@@ -1,13 +1,14 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-from app import auth
+from app import auth, photo_routes
 from app.api import router
 from app.ledger import LedgerError
 
 app = FastAPI(title="Restaurant Inventory Service")
 app.include_router(auth.router)  # /api/auth: login, logout, me
 app.include_router(auth.users_router)  # /api/users: owner manages staff
+app.include_router(photo_routes.router)  # /api/invoice-photos; requires login
 app.include_router(router)  # everything else; requires login
 
 

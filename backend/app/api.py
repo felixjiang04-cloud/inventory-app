@@ -106,6 +106,8 @@ class InvoiceIn(BaseModel):
     qst: str = "0"
     other_tax: str = "0"
     total: str
+    # the photo this invoice was read from, if any (see photo_routes.py)
+    photo_id: int | None = None
 
 
 @router.post("/invoices", status_code=201)
@@ -173,13 +175,29 @@ def create_invoice(
     if supplier is None:
         raise api_error(404, "apiError.supplierNotFound", supplierId=body.supplier_id)
 
+    photo = None
+    if body.photo_id is not None:
+        # locked until this request ends: two saves can't both claim it
+        photo = conn.execute(
+            """
+            SELECT id, file_name, invoice_id FROM invoice_photos
+            WHERE id = %s FOR UPDATE
+            """,
+            (body.photo_id,),
+        ).fetchone()
+        if photo is None:
+            raise api_error(404, "photoError.notFound", photoId=body.photo_id)
+        if photo["invoice_id"] is not None:
+            raise api_error(409, "photoError.alreadyUsed", invoiceId=photo["invoice_id"])
+
     with conn.transaction():
         invoice = conn.execute(
             """
             INSERT INTO invoices (supplier_id, invoice_number, invoice_date,
                                   subtotal_cents, gst_cents, qst_cents,
-                                  other_tax_cents, total_cents, created_by)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                                  other_tax_cents, total_cents, created_by,
+                                  image_path)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id
             """,
             (
@@ -192,8 +210,14 @@ def create_invoice(
                 other_tax,
                 total,
                 user.id,
+                photo["file_name"] if photo else None,
             ),
         ).fetchone()
+        if photo is not None:
+            conn.execute(
+                "UPDATE invoice_photos SET invoice_id = %s WHERE id = %s",
+                (invoice["id"], photo["id"]),
+            )
 
         auto_confirmed = 0
         for raw_text, quantity, cents in parsed_lines:
@@ -263,8 +287,9 @@ def list_invoices(
 def get_invoice(invoice_id: int, conn: psycopg.Connection = Depends(get_db)):
     invoice = conn.execute(
         """
-        SELECT i.*, s.name AS supplier_name
+        SELECT i.*, s.name AS supplier_name, p.id AS photo_id
         FROM invoices i JOIN suppliers s ON s.id = i.supplier_id
+        LEFT JOIN invoice_photos p ON p.invoice_id = i.id
         WHERE i.id = %s
         """,
         (invoice_id,),

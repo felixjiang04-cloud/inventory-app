@@ -5,6 +5,7 @@ through the rolled-back `conn` (see conftest.py).
 """
 
 import hashlib
+import re
 from datetime import datetime, timedelta, timezone
 
 import pytest
@@ -295,8 +296,7 @@ def test_every_api_route_except_login_requires_a_login(anon_client) -> None:
     for method, path in all_api_routes():
         if path in PUBLIC_ROUTES:
             continue
-        concrete = path.replace("{invoice_id}", "1").replace("{line_id}", "1")
-        concrete = concrete.replace("{user_id}", "1")
+        concrete = re.sub(r"\{[^}]+\}", "1", path)  # any {param} -> 1
         response = anon_client.request(method, concrete, json={})
         assert response.status_code == 401, f"{method} {path} is not protected"
         checked += 1
