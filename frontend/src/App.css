@@ -219,3 +219,9 @@ header .who {
   border-bottom: 1px solid #e0e0e0;
   padding: 0.6rem 0;
 }
+
+.login input {
+  display: block;
+  width: 100%;
+  margin-top: 0.3rem;
+}
