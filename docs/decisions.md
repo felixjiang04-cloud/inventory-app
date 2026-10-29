@@ -48,3 +48,42 @@ Newest entries at the bottom.
   source; stays as the fallback when OCR misreads a photo.
 - **User-typed money parsed server-side** by the same deterministic
   parse_money used everywhere ("25,00" and "$1,234.56" both work).
+
+## 2026-10-29 — Hardening before Stage 4 (auth, ledger timing, review safety)
+
+- **Email + password login, sessions in Postgres.** argon2id password
+  hashes; the browser holds a random token in an httpOnly, Secure,
+  SameSite=Lax cookie and only its SHA-256 hash is stored. Sessions last
+  30 days; deactivating a user or resetting a password ends theirs at
+  once. No public sign-up: the first owner is created with
+  `python -m app.create_owner`, staff by the owner inside the app.
+  Emails stay in Postgres and never go to a model call.
+- **Two roles, one restaurant per database.** Staff enter invoices and
+  view everything. Confirming lines, posting to the ledger, creating
+  items/suppliers and managing staff are owner-only — posting is the
+  last check before the append-only ledger, and a quantity typo isn't
+  caught by the totals check. Consequence: staff can't add a brand-new
+  supplier; the owner adds it first.
+- **Audit trail.** invoices.created_by / posted_by / posted_at,
+  invoice_lines.confirmed_by (NULL when filled from a saved spelling),
+  item_aliases.confirmed_by. Not shown in the UI yet.
+- **Stocktakes count at end of day, in restaurant time.** A count is
+  compared with the balance of everything dated on or before the count
+  day (same-day deliveries count as on the shelf), not the balance at
+  posting time. Days are taken in RESTAURANT_TIMEZONE (default
+  America/Toronto), not the database's UTC.
+- **Known limitation — late invoices after a posted count.** An invoice
+  dated on or before an already-posted stocktake makes stock at that
+  count date differ from what was counted. Can't happen yet (there's no
+  stocktake screen); to decide when stocktake entry is built. Options
+  considered: automatic correcting entry at the count date, or refusing
+  such invoices.
+- **No weight↔volume mapping.** Confirming "5KG" onto an item counted in
+  ml (or "3L" onto grams) is refused: it would need a density, which no
+  hand-written table has. Count ("each") can map onto anything.
+- **Saved spellings never change silently.** Re-confirming a spelling
+  with a different item or pack size asks the owner: update it for
+  future invoices, or use the new values on this line only.
+- **CI on every push.** GitHub Actions runs pytest against a throwaway
+  Postgres 17 (database tests must run there, never skip) plus the
+  frontend lint, Vitest tests and build.

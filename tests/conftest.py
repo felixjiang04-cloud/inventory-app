@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 from app import migrate
@@ -7,8 +9,14 @@ from app.db import get_connection
 
 @pytest.fixture(scope="session")
 def test_db_url() -> str:
-    """Connection string of the Neon test branch; skips DB tests if unset."""
+    """Connection string of the test database; skips DB tests if unset.
+
+    CI sets REQUIRE_DB_TESTS=1: there a missing database FAILS the run
+    instead of quietly skipping every database test.
+    """
     if not settings.database_url_test:
+        if os.environ.get("REQUIRE_DB_TESTS") == "1":
+            pytest.fail("REQUIRE_DB_TESTS=1 but DATABASE_URL_TEST is not set")
         pytest.skip("DATABASE_URL_TEST not set in .env — skipping database tests")
     migrate.apply_migrations(settings.database_url_test)
     return settings.database_url_test
