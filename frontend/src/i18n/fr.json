@@ -101,5 +101,8 @@
     "lineNotFound": "Ligne introuvable.",
     "unknown": "Une erreur est survenue.",
     "network": "Impossible de joindre le serveur. Vérifiez votre connexion et réessayez."
+  },
+  "confirmError": {
+    "unitMismatch": "Le texte de la facture est en {{textUnit}}, mais cet article est compté en {{itemUnit}}. Le poids et le volume ne se convertissent pas l'un en l'autre — choisissez un autre article ou créez-en un compté en {{textUnit}}."
   }
 }

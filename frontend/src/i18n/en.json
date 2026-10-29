@@ -101,5 +101,8 @@
     "lineNotFound": "Line not found.",
     "unknown": "Something went wrong.",
     "network": "Could not reach the server. Check your connection and try again."
+  },
+  "confirmError": {
+    "unitMismatch": "The invoice text is in {{textUnit}}, but this item is counted in {{itemUnit}}. Weight and volume can't be converted into each other — pick another item, or create one counted in {{textUnit}}."
   }
 }

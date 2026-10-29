@@ -11,6 +11,9 @@ const CENTS_KEYS: Record<string, string> = {
   totalCents: 'total',
 }
 
+// context keys holding a unit code ('g' / 'ml' / 'each') to translate
+const UNIT_KEYS = ['textUnit', 'itemUnit']
+
 export default function ErrorMessage({ error }: { error: ApiError | null }) {
   const { t, i18n } = useTranslation()
   if (!error) return null
@@ -31,6 +34,11 @@ export default function ErrorMessage({ error }: { error: ApiError | null }) {
         }
         if (typeof vars.field === 'string') {
           vars.field = t(`field.${vars.field}`)
+        }
+        for (const unitKey of UNIT_KEYS) {
+          if (typeof vars[unitKey] === 'string') {
+            vars[unitKey] = t(`unit.${vars[unitKey]}`)
+          }
         }
         const key =
           entry.code === 'invoiceError.badNumber' && vars.line != null

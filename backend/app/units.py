@@ -89,3 +89,15 @@ def to_canonical(quantity: Fraction, unit: str) -> tuple[str, int]:
     base, factor = CONVERSIONS[key]
     exact = quantity * factor
     return base, int(exact + Fraction(1, 2))
+
+
+def units_conflict(text_unit: str, item_unit: str) -> bool:
+    """True when invoice text measured in `text_unit` cannot describe an item
+    counted in `item_unit`.
+
+    Only weight vs volume (g <-> ml) conflicts: converting between them needs
+    the product's density, which no hand-written table here knows. Count
+    ("each") never conflicts — "1 case" or "1 dozen" can sensibly map onto
+    any item, because the owner types how many base units one case holds.
+    """
+    return {text_unit, item_unit} == {"g", "ml"}

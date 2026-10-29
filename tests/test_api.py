@@ -135,3 +135,35 @@ def test_duplicate_item_name_returns_409(client) -> None:
     response = client.post("/api/items", json={"name": "Riz", "base_unit": "g"})
     assert response.status_code == 409
     assert response.json()["detail"]["code"] == "apiError.duplicateName"
+
+
+def test_confirm_rejects_weight_line_on_volume_item(client, conn) -> None:
+    supplier = make_supplier(client)
+    oil = make_item(client, "Huile d'olive", base_unit="ml")
+    tomato_case = make_item(client, "Caisse de tomates", base_unit="each")
+    invoice_id = make_invoice(client, supplier).json()["id"]
+    line_tom = client.get(f"/api/invoices/{invoice_id}").json()["lines"][0]
+    assert line_tom["raw_text"] == "TOMATE ROMA 5KG"
+
+    # "5KG" onto an item counted in milliliters: blocked, nothing written
+    response = client.put(
+        f"/api/invoice-lines/{line_tom['id']}/confirm",
+        json={"item_id": oil, "qty_per_unit": 5000},
+    )
+    assert response.status_code == 422
+    assert response.json()["detail"] == {
+        "code": "confirmError.unitMismatch",
+        "context": {"textUnit": "g", "itemUnit": "ml"},
+    }
+    line = conn.execute(
+        "SELECT item_id FROM invoice_lines WHERE id = %s", (line_tom["id"],)
+    ).fetchone()
+    assert line["item_id"] is None
+    assert conn.execute("SELECT COUNT(*) AS n FROM item_aliases").fetchone()["n"] == 0
+
+    # counting the 5 kg case as 1 "each" is allowed
+    response = client.put(
+        f"/api/invoice-lines/{line_tom['id']}/confirm",
+        json={"item_id": tomato_case, "qty_per_unit": 1},
+    )
+    assert response.status_code == 200

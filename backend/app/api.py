@@ -23,7 +23,7 @@ from app.ledger import (
     post_invoice,
     validate_invoice,
 )
-from app.units import guess_qty_per_unit
+from app.units import guess_qty_per_unit, units_conflict
 
 router = APIRouter(prefix="/api")
 
@@ -362,6 +362,16 @@ def confirm_line(
     ).fetchone()
     if item is None:
         raise _error(404, "apiError.itemNotFound", itemId=body.item_id)
+
+    # "5KG" must not become an item counted in ml (or "3L" one counted in g)
+    size = guess_qty_per_unit(line["raw_text"])
+    if size is not None and units_conflict(size[0], item["base_unit"]):
+        raise _error(
+            422,
+            "confirmError.unitMismatch",
+            textUnit=size[0],
+            itemUnit=item["base_unit"],
+        )
 
     qty_canonical = int(
         Fraction(line["quantity"]) * body.qty_per_unit + Fraction(1, 2)
