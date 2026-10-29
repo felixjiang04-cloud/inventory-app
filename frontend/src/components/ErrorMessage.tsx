@@ -40,6 +40,15 @@ export default function ErrorMessage({ error }: { error: ApiError | null }) {
             vars[unitKey] = t(`unit.${vars[unitKey]}`)
           }
         }
+        // a wait in minutes reads "12 min", or from an hour up "22 h"
+        // (rounded up, so it never says to come back too early)
+        const minutes = vars.minutes
+        if (typeof minutes === 'number') {
+          vars.wait =
+            minutes < 60
+              ? t('wait.minutes', { n: minutes })
+              : t('wait.hours', { n: Math.ceil(minutes / 60) })
+        }
         const key =
           entry.code === 'invoiceError.badNumber' && vars.line != null
             ? 'invoiceError.badNumberLine'

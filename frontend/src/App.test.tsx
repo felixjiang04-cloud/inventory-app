@@ -52,6 +52,28 @@ describe('logging in', () => {
     expect(screen.getByRole('link', { name: 'Staff' })).toBeInTheDocument()
   })
 
+  it('tells a locked-out user how long to wait', async () => {
+    const user = userEvent.setup()
+    renderApp('/', {
+      '/api/auth/me': notLoggedIn,
+      'POST /api/auth/login': {
+        status: 429,
+        body: { detail: { code: 'authError.tooManyAttempts', context: { minutes: 15 } } },
+      },
+    })
+
+    expect(await screen.findByRole('heading', { name: 'Log in' })).toBeInTheDocument()
+    await user.type(screen.getByLabelText('Email'), 'chef@resto.ca')
+    await user.type(screen.getByLabelText('Password'), 'any guess')
+    await user.click(screen.getByRole('button', { name: 'Log in' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Too many failed attempts. Try again in 15 min.',
+    )
+    // still on the login page
+    expect(screen.getByRole('heading', { name: 'Log in' })).toBeInTheDocument()
+  })
+
   it('returns to the login page when the session expires mid-use', async () => {
     renderApp('/review', {
       '/api/auth/me': { body: { id: 1, email: 'chef@resto.ca', role: 'owner' } },

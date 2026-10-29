@@ -31,6 +31,10 @@
     "quantity": "quantity",
     "line_total": "line total"
   },
+  "wait": {
+    "minutes": "{{n}} min",
+    "hours": "{{n}} h"
+  },
   "newInvoice": {
     "title": "New invoice",
     "supplier": "Supplier",
@@ -132,7 +136,8 @@
   "authError": {
     "invalidCredentials": "Wrong email or password.",
     "notLoggedIn": "Please log in again.",
-    "ownerOnly": "Only the owner can do this."
+    "ownerOnly": "Only the owner can do this.",
+    "tooManyAttempts": "Too many failed attempts. Try again in {{wait}}."
   },
   "userError": {
     "badEmail": "That doesn't look like an email address.",

@@ -31,6 +31,10 @@
     "quantity": "quantité",
     "line_total": "total de ligne"
   },
+  "wait": {
+    "minutes": "{{n}} min",
+    "hours": "{{n}} h"
+  },
   "newInvoice": {
     "title": "Nouvelle facture",
     "supplier": "Fournisseur",
@@ -132,7 +136,8 @@
   "authError": {
     "invalidCredentials": "Courriel ou mot de passe incorrect.",
     "notLoggedIn": "Veuillez vous reconnecter.",
-    "ownerOnly": "Seul le propriétaire peut faire cela."
+    "ownerOnly": "Seul le propriétaire peut faire cela.",
+    "tooManyAttempts": "Trop de tentatives échouées. Réessayez dans {{wait}}."
   },
   "userError": {
     "badEmail": "Cette adresse courriel ne semble pas valide.",

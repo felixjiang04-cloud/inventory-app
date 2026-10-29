@@ -20,4 +20,15 @@ describe('ErrorMessage', () => {
       /in grams \(g\), but this item is counted in milliliters \(ml\)/,
     )
   })
+
+  it('shows a long lockout wait in hours', () => {
+    const error = new ApiError(
+      { detail: { code: 'authError.tooManyAttempts', context: { minutes: 1320 } } },
+      429,
+    )
+    render(<ErrorMessage error={error} />)
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Too many failed attempts. Try again in 22 h.',
+    )
+  })
 })
