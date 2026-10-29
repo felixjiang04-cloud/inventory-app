@@ -9,7 +9,8 @@
   "nav": {
     "home": "Accueil",
     "newInvoice": "Nouvelle facture",
-    "review": "Révision"
+    "review": "Révision",
+    "staff": "Personnel"
   },
   "common": {
     "loading": "Chargement…",
@@ -51,7 +52,8 @@
     "total": "Total imprimé",
     "submit": "Enregistrer la facture",
     "saved": "Facture enregistrée — elle attend dans la file de révision.",
-    "goReview": "Aller à la révision"
+    "goReview": "Aller à la révision",
+    "askOwnerForSupplier": "Fournisseur absent de la liste ? Demandez au propriétaire de l'ajouter."
   },
   "review": {
     "title": "File de révision",
@@ -77,7 +79,9 @@
     "change": "Modifier",
     "aliasConflict": "Cette appellation est déjà enregistrée : {{savedItem}}, 1 unité = {{savedQty}}. Vous avez saisi : {{newItem}}, 1 unité = {{newQty}}.",
     "aliasUpdate": "Mettre à jour pour les prochaines factures",
-    "aliasLineOnly": "Seulement pour cette facture"
+    "aliasLineOnly": "Seulement pour cette facture",
+    "waitingForOwner": "En attente de la confirmation du propriétaire.",
+    "ownerPosts": "Seul le propriétaire peut inscrire cette facture au registre."
   },
   "invoiceError": {
     "noLines": "La facture n'a aucune ligne.",
@@ -109,5 +113,49 @@
   "confirmError": {
     "unitMismatch": "Le texte de la facture est en {{textUnit}}, mais cet article est compté en {{itemUnit}}. Le poids et le volume ne se convertissent pas l'un en l'autre — choisissez un autre article ou créez-en un compté en {{textUnit}}.",
     "aliasConflict": "Cette appellation est déjà enregistrée avec un autre article ou un autre format."
+  },
+  "role": {
+    "owner": "propriétaire",
+    "staff": "employé"
+  },
+  "auth": {
+    "loggedInAs": "{{email}} ({{role}})",
+    "logout": "Se déconnecter"
+  },
+  "login": {
+    "title": "Connexion",
+    "email": "Courriel",
+    "password": "Mot de passe",
+    "submit": "Se connecter",
+    "forgotHint": "Mot de passe oublié ? Demandez au propriétaire de le réinitialiser."
+  },
+  "authError": {
+    "invalidCredentials": "Courriel ou mot de passe incorrect.",
+    "notLoggedIn": "Veuillez vous reconnecter.",
+    "ownerOnly": "Seul le propriétaire peut faire cela."
+  },
+  "userError": {
+    "badEmail": "Cette adresse courriel ne semble pas valide.",
+    "passwordTooShort": "Le mot de passe doit contenir au moins {{min}} caractères.",
+    "emailTaken": "{{email}} a déjà un compte.",
+    "cannotDeactivateSelf": "Vous ne pouvez pas désactiver votre propre compte.",
+    "notFound": "Utilisateur introuvable."
+  },
+  "staff": {
+    "title": "Comptes du personnel",
+    "inactive": "désactivé",
+    "deactivate": "Désactiver",
+    "reactivate": "Réactiver",
+    "resetPassword": "Réinitialiser le mot de passe",
+    "newPassword": "Nouveau mot de passe",
+    "save": "Enregistrer",
+    "addTitle": "Ajouter un employé",
+    "initialPassword": "Mot de passe initial",
+    "passwordHint": "Au moins {{min}} caractères. Transmettez-le directement à la personne.",
+    "add": "Ajouter",
+    "added": "Compte créé.",
+    "deactivated": "Compte désactivé. Cette personne a été déconnectée partout.",
+    "reactivated": "Compte réactivé.",
+    "passwordReset": "Mot de passe changé. Cette personne a été déconnectée partout."
   }
 }

@@ -9,7 +9,8 @@
   "nav": {
     "home": "首页",
     "newInvoice": "新发票",
-    "review": "审核"
+    "review": "审核",
+    "staff": "员工"
   },
   "common": {
     "loading": "加载中…",
@@ -51,7 +52,8 @@
     "total": "发票总计",
     "submit": "保存发票",
     "saved": "发票已保存，正在审核队列中等待。",
-    "goReview": "去审核"
+    "goReview": "去审核",
+    "askOwnerForSupplier": "列表中没有该供应商？请让店主添加。"
   },
   "review": {
     "title": "审核队列",
@@ -77,7 +79,9 @@
     "change": "修改",
     "aliasConflict": "该写法已保存为：{{savedItem}}，每单位 = {{savedQty}}。您输入的是：{{newItem}}，每单位 = {{newQty}}。",
     "aliasUpdate": "更新，以后的发票也照此计算",
-    "aliasLineOnly": "仅用于这张发票"
+    "aliasLineOnly": "仅用于这张发票",
+    "waitingForOwner": "等待店主确认此行。",
+    "ownerPosts": "只有店主可以将此发票过账。"
   },
   "invoiceError": {
     "noLines": "发票没有明细行。",
@@ -109,5 +113,49 @@
   "confirmError": {
     "unitMismatch": "发票上的单位是{{textUnit}}，但该货品以{{itemUnit}}计量。重量和容量无法互相换算——请选择其他货品，或新建一个以{{textUnit}}计量的货品。",
     "aliasConflict": "该写法已保存为其他货品或其他包装规格。"
+  },
+  "role": {
+    "owner": "店主",
+    "staff": "员工"
+  },
+  "auth": {
+    "loggedInAs": "{{email}}（{{role}}）",
+    "logout": "退出登录"
+  },
+  "login": {
+    "title": "登录",
+    "email": "电子邮箱",
+    "password": "密码",
+    "submit": "登录",
+    "forgotHint": "忘记密码？请让店主为您重置。"
+  },
+  "authError": {
+    "invalidCredentials": "邮箱或密码错误。",
+    "notLoggedIn": "请重新登录。",
+    "ownerOnly": "只有店主可以执行此操作。"
+  },
+  "userError": {
+    "badEmail": "邮箱地址格式不正确。",
+    "passwordTooShort": "密码至少需要 {{min}} 个字符。",
+    "emailTaken": "{{email}} 已有账户。",
+    "cannotDeactivateSelf": "不能停用自己的账户。",
+    "notFound": "找不到该用户。"
+  },
+  "staff": {
+    "title": "员工账户",
+    "inactive": "已停用",
+    "deactivate": "停用",
+    "reactivate": "重新启用",
+    "resetPassword": "重置密码",
+    "newPassword": "新密码",
+    "save": "保存",
+    "addTitle": "添加员工",
+    "initialPassword": "初始密码",
+    "passwordHint": "至少 {{min}} 个字符。请当面告知对方。",
+    "add": "添加",
+    "added": "账户已创建。",
+    "deactivated": "账户已停用，该员工已在所有设备上退出登录。",
+    "reactivated": "账户已重新启用。",
+    "passwordReset": "密码已更改，该员工已在所有设备上退出登录。"
   }
 }

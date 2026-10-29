@@ -4,6 +4,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 
 import type { InvoiceDetail } from '../api'
+import { AsUser } from '../test/AsUser'
 import { fakeFetch, sentBody } from '../test/fakeFetch'
 import ReviewInvoice from './ReviewInvoice'
 
@@ -33,13 +34,15 @@ const invoice: InvoiceDetail = {
   ],
 }
 
-function renderPage() {
+function renderPage(role: 'owner' | 'staff' = 'owner') {
   render(
-    <MemoryRouter initialEntries={['/review/1']}>
-      <Routes>
-        <Route path="/review/:id" element={<ReviewInvoice />} />
-      </Routes>
-    </MemoryRouter>,
+    <AsUser role={role}>
+      <MemoryRouter initialEntries={['/review/1']}>
+        <Routes>
+          <Route path="/review/:id" element={<ReviewInvoice />} />
+        </Routes>
+      </MemoryRouter>
+    </AsUser>,
   )
 }
 
@@ -145,5 +148,27 @@ describe('ReviewInvoice saved spellings', () => {
     renderPage()
     expect(await screen.findByText(/10,000 g recorded/)).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Change' })).not.toBeInTheDocument()
+  })
+})
+
+describe('ReviewInvoice for staff', () => {
+  it('shows lines as waiting for the owner, with no confirm or post', async () => {
+    const fetchMock = fakeFetch({
+      '/api/invoices/1': { body: invoice },
+      '/api/items': { body: [] },
+    })
+    renderPage('staff')
+
+    expect(
+      await screen.findByText('Waiting for the owner to confirm this line.'),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Confirm' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Post to ledger' })).not.toBeInTheDocument()
+    expect(
+      screen.getByText('Only the owner can post this invoice to the ledger.'),
+    ).toBeInTheDocument()
+    // and it doesn't even ask for suggestions it can't use
+    const paths = fetchMock.mock.calls.map(([path]) => path)
+    expect(paths).not.toContain('/api/invoice-lines/10/suggestions')
   })
 })

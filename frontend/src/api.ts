@@ -26,6 +26,15 @@ export class ApiError extends Error {
 // itself is down or unreachable.
 const GATEWAY_STATUSES = [502, 503, 504]
 
+// Called whenever the server answers 401 "not logged in" (the session
+// expired, or the account was deactivated): the app then shows the login
+// page. AuthProvider sets it.
+let onUnauthorized: () => void = () => {}
+
+export function setUnauthorizedHandler(handler: () => void) {
+  onUnauthorized = handler
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response
   try {
@@ -50,6 +59,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       throw new ApiError(null, response.status)
     }
   }
+  if (response.status === 401) onUnauthorized()
   if (!response.ok) throw new ApiError(payload, response.status)
   return payload as T
 }

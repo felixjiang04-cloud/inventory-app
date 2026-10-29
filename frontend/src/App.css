@@ -197,3 +197,25 @@ select {
 .warning-box p {
   margin: 0 0 0.5rem;
 }
+
+header .who {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #444;
+}
+
+.login {
+  max-width: 22rem;
+  margin: 2rem auto;
+}
+
+.staff-list {
+  list-style: none;
+  padding: 0;
+}
+
+.staff-list li {
+  border-bottom: 1px solid #e0e0e0;
+  padding: 0.6rem 0;
+}

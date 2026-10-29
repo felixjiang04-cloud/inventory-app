@@ -9,7 +9,8 @@
   "nav": {
     "home": "Home",
     "newInvoice": "New invoice",
-    "review": "Review"
+    "review": "Review",
+    "staff": "Staff"
   },
   "common": {
     "loading": "Loading…",
@@ -51,7 +52,8 @@
     "total": "Total as printed",
     "submit": "Save invoice",
     "saved": "Invoice saved — it is waiting in the review queue.",
-    "goReview": "Go to review"
+    "goReview": "Go to review",
+    "askOwnerForSupplier": "Supplier missing from the list? Ask the owner to add it."
   },
   "review": {
     "title": "Review queue",
@@ -77,7 +79,9 @@
     "change": "Change",
     "aliasConflict": "This spelling is already saved as {{savedItem}}, 1 unit = {{savedQty}}. You entered {{newItem}}, 1 unit = {{newQty}}.",
     "aliasUpdate": "Update it for future invoices",
-    "aliasLineOnly": "Use only for this invoice"
+    "aliasLineOnly": "Use only for this invoice",
+    "waitingForOwner": "Waiting for the owner to confirm this line.",
+    "ownerPosts": "Only the owner can post this invoice to the ledger."
   },
   "invoiceError": {
     "noLines": "The invoice has no lines.",
@@ -109,5 +113,49 @@
   "confirmError": {
     "unitMismatch": "The invoice text is in {{textUnit}}, but this item is counted in {{itemUnit}}. Weight and volume can't be converted into each other — pick another item, or create one counted in {{textUnit}}.",
     "aliasConflict": "This spelling is already saved with a different item or pack size."
+  },
+  "role": {
+    "owner": "owner",
+    "staff": "staff"
+  },
+  "auth": {
+    "loggedInAs": "{{email}} ({{role}})",
+    "logout": "Log out"
+  },
+  "login": {
+    "title": "Log in",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Log in",
+    "forgotHint": "Forgot your password? Ask the owner to reset it."
+  },
+  "authError": {
+    "invalidCredentials": "Wrong email or password.",
+    "notLoggedIn": "Please log in again.",
+    "ownerOnly": "Only the owner can do this."
+  },
+  "userError": {
+    "badEmail": "That doesn't look like an email address.",
+    "passwordTooShort": "The password needs at least {{min}} characters.",
+    "emailTaken": "{{email}} already has an account.",
+    "cannotDeactivateSelf": "You can't deactivate your own account.",
+    "notFound": "User not found."
+  },
+  "staff": {
+    "title": "Staff accounts",
+    "inactive": "deactivated",
+    "deactivate": "Deactivate",
+    "reactivate": "Reactivate",
+    "resetPassword": "Reset password",
+    "newPassword": "New password",
+    "save": "Save",
+    "addTitle": "Add a staff member",
+    "initialPassword": "Initial password",
+    "passwordHint": "At least {{min}} characters. Give it to the person directly.",
+    "add": "Add",
+    "added": "Account created.",
+    "deactivated": "Account deactivated. That person has been logged out everywhere.",
+    "reactivated": "Account reactivated.",
+    "passwordReset": "Password changed. That person has been logged out everywhere."
   }
 }

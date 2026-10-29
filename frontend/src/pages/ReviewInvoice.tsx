@@ -10,6 +10,7 @@ import type {
   PostResult,
   Suggestion,
 } from '../api'
+import { useIsOwner } from '../auth'
 import ErrorMessage from '../components/ErrorMessage'
 import { formatCents, formatQty } from '../format'
 
@@ -28,13 +29,13 @@ function aliasConflictVars(context: Record<string, unknown>) {
 function LineCard({
   line,
   items,
-  editable,
+  canEdit,
   onConfirmed,
   onItemCreated,
 }: {
   line: InvoiceLine
   items: Item[]
-  editable: boolean // invoice still pending, so a confirmed line can change
+  canEdit: boolean // the owner, and the invoice is still pending
   onConfirmed: () => void
   onItemCreated: (item: Item) => void
 }) {
@@ -58,7 +59,7 @@ function LineCard({
   const [conflict, setConflict] = useState<ApiError | null>(null)
 
   const confirmed = line.item_id !== null
-  const showForm = !confirmed || editing
+  const showForm = canEdit && (!confirmed || editing)
 
   useEffect(() => {
     if (showForm) {
@@ -71,15 +72,19 @@ function LineCard({
 
   if (!showForm) {
     return (
-      <div className="line-card confirmed">
+      <div className={confirmed ? 'line-card confirmed' : 'line-card'}>
         <strong>{line.raw_text}</strong>
-        <span>
-          {line.item_name} —{' '}
-          {t('review.confirmedAs', {
-            qty: formatQty(line.qty_canonical ?? 0, line.item_base_unit ?? ''),
-          })}
-        </span>
-        {editable && (
+        {confirmed ? (
+          <span>
+            {line.item_name} —{' '}
+            {t('review.confirmedAs', {
+              qty: formatQty(line.qty_canonical ?? 0, line.item_base_unit ?? ''),
+            })}
+          </span>
+        ) : (
+          <span className="muted">{t('review.waitingForOwner')}</span>
+        )}
+        {confirmed && canEdit && (
           <span>
             <button type="button" onClick={() => setEditing(true)}>
               {t('review.change')}
@@ -276,6 +281,7 @@ export default function ReviewInvoice() {
   const [loadError, setLoadError] = useState<ApiError | null>(null)
   const [posted, setPosted] = useState<PostResult | null>(null)
   const language = i18n.resolvedLanguage ?? 'en'
+  const isOwner = useIsOwner() // only the owner confirms lines and posts
 
   const reload = useCallback(() => {
     api
@@ -352,7 +358,7 @@ export default function ReviewInvoice() {
           key={line.id}
           line={line}
           items={items}
-          editable={invoice.status === 'pending_review'}
+          canEdit={isOwner && invoice.status === 'pending_review'}
           onConfirmed={reload}
           onItemCreated={(item) =>
             setItems((old) =>
@@ -368,9 +374,13 @@ export default function ReviewInvoice() {
           : t('review.allConfirmed')}
       </p>
       <ErrorMessage error={error} />
-      <button type="button" disabled={unconfirmed > 0} onClick={post}>
-        {t('review.post')}
-      </button>
+      {isOwner ? (
+        <button type="button" disabled={unconfirmed > 0} onClick={post}>
+          {t('review.post')}
+        </button>
+      ) : (
+        <p className="muted">{t('review.ownerPosts')}</p>
+      )}
     </section>
   )
 }

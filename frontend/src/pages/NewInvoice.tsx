@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 
 import { api, ApiError, toApiError } from '../api'
 import type { Supplier } from '../api'
+import { useIsOwner } from '../auth'
 import ErrorMessage from '../components/ErrorMessage'
 
 interface LineDraft {
@@ -16,6 +17,7 @@ const emptyLine = (): LineDraft => ({ raw_text: '', quantity: '1', line_total: '
 
 export default function NewInvoice() {
   const { t } = useTranslation()
+  const isOwner = useIsOwner() // only the owner may add suppliers
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [supplierId, setSupplierId] = useState('')
   const [creatingSupplier, setCreatingSupplier] = useState(false)
@@ -115,14 +117,17 @@ export default function NewInvoice() {
                 </option>
               ))}
             </select>
-            <button
-              type="button"
-              onClick={() => setCreatingSupplier((v) => !v)}
-            >
-              {t('newInvoice.newSupplier')}
-            </button>
+            {isOwner && (
+              <button
+                type="button"
+                onClick={() => setCreatingSupplier((v) => !v)}
+              >
+                {t('newInvoice.newSupplier')}
+              </button>
+            )}
           </span>
         </label>
+        {!isOwner && <p className="muted">{t('newInvoice.askOwnerForSupplier')}</p>}
         {creatingSupplier && (
           <span className="row">
             <input
