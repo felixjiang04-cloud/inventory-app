@@ -14,7 +14,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from psycopg import errors
 from pydantic import BaseModel, Field
 
+from app.auth import User, get_current_user, require_owner
 from app.deps import get_db
+from app.errors import api_error
 from app.ledger import (
     LedgerError,
     item_balance,
@@ -25,11 +27,9 @@ from app.ledger import (
 )
 from app.units import guess_qty_per_unit, units_conflict
 
-router = APIRouter(prefix="/api")
-
-
-def _error(status: int, code: str, **context) -> HTTPException:
-    return HTTPException(status, detail={"code": code, "context": context})
+# Every route below requires a logged-in user (401 otherwise). Owner-only
+# routes add Depends(require_owner) on top (403 for staff).
+router = APIRouter(prefix="/api", dependencies=[Depends(get_current_user)])
 
 
 # ---------------------------------------------------------------------------
@@ -51,7 +51,7 @@ def list_suppliers(conn: psycopg.Connection = Depends(get_db)):
     return conn.execute("SELECT id, name FROM suppliers ORDER BY name").fetchall()
 
 
-@router.post("/suppliers", status_code=201)
+@router.post("/suppliers", status_code=201, dependencies=[Depends(require_owner)])
 def create_supplier(body: SupplierIn, conn: psycopg.Connection = Depends(get_db)):
     try:
         with conn.transaction():
@@ -60,7 +60,7 @@ def create_supplier(body: SupplierIn, conn: psycopg.Connection = Depends(get_db)
                 (body.name.strip(),),
             ).fetchone()
     except errors.UniqueViolation:
-        raise _error(409, "apiError.duplicateName", name=body.name.strip()) from None
+        raise api_error(409, "apiError.duplicateName", name=body.name.strip()) from None
 
 
 @router.get("/items")
@@ -70,7 +70,7 @@ def list_items(conn: psycopg.Connection = Depends(get_db)):
     ).fetchall()
 
 
-@router.post("/items", status_code=201)
+@router.post("/items", status_code=201, dependencies=[Depends(require_owner)])
 def create_item(body: ItemIn, conn: psycopg.Connection = Depends(get_db)):
     try:
         with conn.transaction():
@@ -82,7 +82,7 @@ def create_item(body: ItemIn, conn: psycopg.Connection = Depends(get_db)):
                 (body.name.strip(), body.base_unit),
             ).fetchone()
     except errors.UniqueViolation:
-        raise _error(409, "apiError.duplicateName", name=body.name.strip()) from None
+        raise api_error(409, "apiError.duplicateName", name=body.name.strip()) from None
 
 
 # ---------------------------------------------------------------------------
@@ -109,7 +109,11 @@ class InvoiceIn(BaseModel):
 
 
 @router.post("/invoices", status_code=201)
-def create_invoice(body: InvoiceIn, conn: psycopg.Connection = Depends(get_db)):
+def create_invoice(
+    body: InvoiceIn,
+    user: User = Depends(get_current_user),
+    conn: psycopg.Connection = Depends(get_db),
+):
     field_errors: list[dict] = []
 
     def money(field: str, text: str) -> int:
@@ -167,15 +171,15 @@ def create_invoice(body: InvoiceIn, conn: psycopg.Connection = Depends(get_db)):
         "SELECT id FROM suppliers WHERE id = %s", (body.supplier_id,)
     ).fetchone()
     if supplier is None:
-        raise _error(404, "apiError.supplierNotFound", supplierId=body.supplier_id)
+        raise api_error(404, "apiError.supplierNotFound", supplierId=body.supplier_id)
 
     with conn.transaction():
         invoice = conn.execute(
             """
             INSERT INTO invoices (supplier_id, invoice_number, invoice_date,
                                   subtotal_cents, gst_cents, qst_cents,
-                                  other_tax_cents, total_cents)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                                  other_tax_cents, total_cents, created_by)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id
             """,
             (
@@ -187,6 +191,7 @@ def create_invoice(body: InvoiceIn, conn: psycopg.Connection = Depends(get_db)):
                 qst,
                 other_tax,
                 total,
+                user.id,
             ),
         ).fetchone()
 
@@ -265,7 +270,7 @@ def get_invoice(invoice_id: int, conn: psycopg.Connection = Depends(get_db)):
         (invoice_id,),
     ).fetchone()
     if invoice is None:
-        raise _error(404, "apiError.invoiceNotFound", invoiceId=invoice_id)
+        raise api_error(404, "apiError.invoiceNotFound", invoiceId=invoice_id)
 
     lines = conn.execute(
         """
@@ -300,7 +305,7 @@ def line_suggestions(line_id: int, conn: psycopg.Connection = Depends(get_db)):
         (line_id,),
     ).fetchone()
     if line is None:
-        raise _error(404, "apiError.lineNotFound", lineId=line_id)
+        raise api_error(404, "apiError.lineNotFound", lineId=line_id)
 
     # Deterministic trigram similarity against catalog names AND known
     # confirmed spellings; the best score per item wins.
@@ -346,7 +351,10 @@ class ConfirmLineIn(BaseModel):
 
 @router.put("/invoice-lines/{line_id}/confirm")
 def confirm_line(
-    line_id: int, body: ConfirmLineIn, conn: psycopg.Connection = Depends(get_db)
+    line_id: int,
+    body: ConfirmLineIn,
+    owner: User = Depends(require_owner),
+    conn: psycopg.Connection = Depends(get_db),
 ):
     line = conn.execute(
         """
@@ -357,21 +365,21 @@ def confirm_line(
         (line_id,),
     ).fetchone()
     if line is None:
-        raise _error(404, "apiError.lineNotFound", lineId=line_id)
+        raise api_error(404, "apiError.lineNotFound", lineId=line_id)
     if line["status"] != "pending_review":
-        raise _error(409, "ledgerError.invoiceNotPending", status=line["status"])
+        raise api_error(409, "ledgerError.invoiceNotPending", status=line["status"])
 
     item = conn.execute(
         "SELECT id, name, base_unit FROM items WHERE id = %s AND active",
         (body.item_id,),
     ).fetchone()
     if item is None:
-        raise _error(404, "apiError.itemNotFound", itemId=body.item_id)
+        raise api_error(404, "apiError.itemNotFound", itemId=body.item_id)
 
     # "5KG" must not become an item counted in ml (or "3L" one counted in g)
     size = guess_qty_per_unit(line["raw_text"])
     if size is not None and units_conflict(size[0], item["base_unit"]):
-        raise _error(
+        raise api_error(
             422,
             "confirmError.unitMismatch",
             textUnit=size[0],
@@ -393,7 +401,7 @@ def confirm_line(
         saved["item_id"] != body.item_id or saved["qty_per_unit"] != body.qty_per_unit
     )
     if differs and body.alias_choice is None:
-        raise _error(
+        raise api_error(
             409,
             "confirmError.aliasConflict",
             savedItemName=saved["name"],
@@ -410,25 +418,31 @@ def confirm_line(
     )
     with conn.transaction():
         conn.execute(
-            "UPDATE invoice_lines SET item_id = %s, qty_canonical = %s WHERE id = %s",
-            (body.item_id, qty_canonical, line_id),
+            """
+            UPDATE invoice_lines
+            SET item_id = %s, qty_canonical = %s, confirmed_by = %s
+            WHERE id = %s
+            """,
+            (body.item_id, qty_canonical, owner.id, line_id),
         )
         if not keep_saved_alias:
             conn.execute(
                 """
                 INSERT INTO item_aliases (supplier_id, raw_text, item_id,
-                                          qty_per_unit, confirmed_at)
-                VALUES (%s, %s, %s, %s, now())
+                                          qty_per_unit, confirmed_at, confirmed_by)
+                VALUES (%s, %s, %s, %s, now(), %s)
                 ON CONFLICT (supplier_id, raw_text)
                 DO UPDATE SET item_id = EXCLUDED.item_id,
                               qty_per_unit = EXCLUDED.qty_per_unit,
-                              confirmed_at = now()
+                              confirmed_at = now(),
+                              confirmed_by = EXCLUDED.confirmed_by
                 """,
                 (
                     line["supplier_id"],
                     line["raw_text"],
                     body.item_id,
                     body.qty_per_unit,
+                    owner.id,
                 ),
             )
     return {
@@ -442,9 +456,12 @@ def confirm_line(
 
 @router.post("/invoices/{invoice_id}/post")
 def post_invoice_endpoint(
-    invoice_id: int, conn: psycopg.Connection = Depends(get_db)
+    invoice_id: int,
+    owner: User = Depends(require_owner),
+    conn: psycopg.Connection = Depends(get_db),
 ):
-    entry_ids = post_invoice(conn, invoice_id)  # raises LedgerError -> 409
+    # raises LedgerError -> 409
+    entry_ids = post_invoice(conn, invoice_id, posted_by=owner.id)
 
     balances = conn.execute(
         """

@@ -168,11 +168,14 @@ class Balance:
     cost_cents: int  # net spend recorded against the item
 
 
-def post_invoice(conn: psycopg.Connection, invoice_id: int) -> list[int]:
+def post_invoice(
+    conn: psycopg.Connection, invoice_id: int, posted_by: int | None = None
+) -> list[int]:
     """Turn a fully-confirmed invoice into ledger entries (one per line).
 
     Transactional: either every entry is written and the invoice is
-    marked posted, or nothing happens at all.
+    marked posted, or nothing happens at all. `posted_by` is the user id
+    recorded as having posted it.
     """
     with conn.transaction():
         invoice = conn.execute(
@@ -235,7 +238,12 @@ def post_invoice(conn: psycopg.Connection, invoice_id: int) -> list[int]:
             entry_ids.append(row["id"])
 
         conn.execute(
-            "UPDATE invoices SET status = 'posted' WHERE id = %s", (invoice_id,)
+            """
+            UPDATE invoices
+            SET status = 'posted', posted_by = %s, posted_at = now()
+            WHERE id = %s
+            """,
+            (posted_by, invoice_id),
         )
     return entry_ids
 

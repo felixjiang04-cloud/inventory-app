@@ -26,9 +26,13 @@ def conn(test_db_url):
             yield connection
 
 
+TEST_PASSWORD = "correct horse battery staple"
+
+
 @pytest.fixture
-def client(conn):
-    """API test client whose requests share the rolled-back test connection."""
+def make_client(conn):
+    """Factory for API test clients whose requests share the rolled-back
+    test connection. Each client has its own cookies — like its own browser."""
     from fastapi.testclient import TestClient
 
     from app.deps import get_db
@@ -39,6 +43,58 @@ def client(conn):
 
     app.dependency_overrides[get_db] = override
     try:
-        yield TestClient(app)
+        # https: the login cookie is Secure, so it only travels over https
+        yield lambda: TestClient(app, base_url="https://testserver")
     finally:
         app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def make_user(conn):
+    """Factory: insert a user straight into the database, return its id."""
+    from app.auth import hash_password
+
+    def make(email: str, role: str = "staff", password: str = TEST_PASSWORD) -> int:
+        return conn.execute(
+            """
+            INSERT INTO users (email, password_hash, role)
+            VALUES (%s, %s, %s) RETURNING id
+            """,
+            (email, hash_password(password), role),
+        ).fetchone()["id"]
+
+    return make
+
+
+@pytest.fixture
+def test_password() -> str:
+    """The password every make_user() account gets unless told otherwise."""
+    return TEST_PASSWORD
+
+
+def _logged_in(client, email: str):
+    response = client.post(
+        "/api/auth/login", json={"email": email, "password": TEST_PASSWORD}
+    )
+    assert response.status_code == 200, response.text
+    return client
+
+
+@pytest.fixture
+def client(make_client, make_user):
+    """API client logged in as the owner, through the real login endpoint."""
+    make_user("owner@example.test", role="owner")
+    return _logged_in(make_client(), "owner@example.test")
+
+
+@pytest.fixture
+def staff_client(make_client, make_user):
+    """API client logged in as a staff member."""
+    make_user("staff@example.test", role="staff")
+    return _logged_in(make_client(), "staff@example.test")
+
+
+@pytest.fixture
+def anon_client(make_client):
+    """API client that never logged in."""
+    return make_client()
