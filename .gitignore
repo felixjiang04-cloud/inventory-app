@@ -36,3 +36,6 @@ Desktop.ini
 
 # --- Claude Code local settings ---
 .claude/settings.local.json
+
+# --- Uploaded invoice photos (may contain personal data) ---
+uploads/

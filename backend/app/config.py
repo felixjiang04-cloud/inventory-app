@@ -28,5 +28,16 @@ class Settings(BaseSettings):
     # (e.g. Safari), set SESSION_COOKIE_SECURE=false in your local .env.
     session_cookie_secure: bool = True
 
+    # --- The AI that reads invoice photos (see app/llm.py) ---
+    # Any model server speaking the OpenAI-style chat API. Everything about
+    # it lives here, never in code. With LLM_BASE_URL empty there is no AI:
+    # photos wait to be read, and typing an invoice by hand always works.
+    llm_base_url: str = ""
+    llm_api_key: str = ""  # only if the model server requires one
+    ocr_model: str = ""
+    llm_timeout_seconds: float = 90
+    # Folder where uploaded invoice photos are kept (gitignored).
+    photo_dir: str = "uploads"
+
 
 settings = Settings()
