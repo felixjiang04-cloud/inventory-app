@@ -5,13 +5,16 @@ through the rolled-back `conn` (see conftest.py).
 """
 
 import hashlib
+from datetime import datetime, timedelta, timezone
 
 import pytest
 from psycopg import errors
 
+from app import auth
 from app.auth import (
     SESSION_COOKIE,
     hash_password,
+    locked_until,
     looks_like_email,
     normalize_email,
     password_matches,
@@ -36,6 +39,40 @@ def test_emails_are_normalized_and_checked() -> None:
     assert looks_like_email("ana@resto.ca")
     assert not looks_like_email("ana@resto")
     assert not looks_like_email("ana resto.ca")
+
+
+NOW = datetime(2026, 10, 29, 12, 0, tzinfo=timezone.utc)
+
+
+def minutes_ago(*minutes: int) -> list[datetime]:
+    return [NOW - timedelta(minutes=m) for m in minutes]
+
+
+def test_five_failures_within_15_minutes_lock_an_email() -> None:
+    assert locked_until([], NOW) is None
+    assert locked_until(minutes_ago(1, 2, 3, 4), NOW) is None
+    # the 5th newest failure was 10 minutes ago: 5 more minutes to wait
+    assert locked_until(minutes_ago(1, 2, 3, 4, 10), NOW) == NOW + timedelta(minutes=5)
+    # a failure 15 minutes old no longer counts
+    assert locked_until(minutes_ago(1, 2, 3, 4, 15), NOW) is None
+
+
+def test_twenty_failures_within_a_day_lock_an_email() -> None:
+    # one failure every half hour: never 5 within 15 minutes
+    nineteen = minutes_ago(*range(30, 600, 30))
+    assert len(nineteen) == 19
+    assert locked_until(nineteen, NOW) is None
+
+    twenty = nineteen + minutes_ago(600)
+    # locked until the oldest of the twenty is a day old
+    assert locked_until(twenty, NOW) == NOW - timedelta(minutes=600) + timedelta(days=1)
+
+
+def test_when_both_limits_are_reached_the_later_end_wins() -> None:
+    # 5 failures right now (15-minute lock), plus 15 earlier today
+    failures = minutes_ago(0, 0, 0, 0, 0) + minutes_ago(*range(60, 960, 60))
+    assert len(failures) == 20
+    assert locked_until(failures, NOW) == NOW - timedelta(minutes=900) + timedelta(days=1)
 
 
 # --- logging in and out ----------------------------------------------------
@@ -99,6 +136,142 @@ def test_expired_session_is_rejected(conn, client) -> None:
     response = client.get("/api/auth/me")
     assert response.status_code == 401
     assert response.json()["detail"]["code"] == "authError.notLoggedIn"
+
+
+# --- brute-force protection --------------------------------------------------
+# Inside one test, Postgres' now() stays fixed (it is the time the test's
+# transaction began), so waits come out exact: 15 minutes, not 14:59.
+
+
+def fail_logins(client, email, times=5):
+    for _ in range(times):
+        assert login(client, email, "wrong password").status_code == 401
+
+
+def failure_count(conn, email) -> int:
+    return conn.execute(
+        "SELECT count(*) AS n FROM login_failures WHERE email = %s", (email,)
+    ).fetchone()["n"]
+
+
+def test_five_wrong_passwords_lock_the_email(
+    conn, anon_client, make_user, test_password, monkeypatch
+) -> None:
+    make_user("ana@resto.ca")
+    # typed differently, still one email: one counter
+    for typed in [
+        "ana@resto.ca",
+        "ANA@resto.ca",
+        " Ana@Resto.ca",
+        "ana@RESTO.CA",
+        "Ana@resto.ca ",
+    ]:
+        assert login(anon_client, typed, "wrong password").status_code == 401
+    # each failure was kept, although its request ended in an error
+    assert failure_count(conn, "ana@resto.ca") == 5
+
+    def must_not_run(*args):
+        raise AssertionError("a locked email's password was checked")
+
+    monkeypatch.setattr(auth, "password_matches", must_not_run)
+
+    response = login(anon_client, "ana@resto.ca", test_password)  # even the right one
+
+    assert response.status_code == 429
+    assert response.json() == {
+        "detail": {"code": "authError.tooManyAttempts", "context": {"minutes": 15}}
+    }
+    assert response.headers["retry-after"] == "900"
+    assert failure_count(conn, "ana@resto.ca") == 5  # a refused try doesn't count
+
+
+def test_an_unknown_email_is_locked_exactly_like_a_real_one(anon_client, make_user) -> None:
+    make_user("ana@resto.ca")
+    fail_logins(anon_client, "ana@resto.ca")
+    fail_logins(anon_client, "nobody@resto.ca")
+
+    real = login(anon_client, "ana@resto.ca", "another guess")
+    unknown = login(anon_client, "nobody@resto.ca", "another guess")
+
+    assert real.status_code == unknown.status_code == 429
+    assert real.json() == unknown.json()
+    assert real.headers["retry-after"] == unknown.headers["retry-after"]
+
+
+def test_the_lock_lifts_once_the_failures_are_15_minutes_old(
+    conn, anon_client, make_user, test_password
+) -> None:
+    make_user("ana@resto.ca")
+    fail_logins(anon_client, "ana@resto.ca")
+    assert login(anon_client, "ana@resto.ca", test_password).status_code == 429
+
+    conn.execute("UPDATE login_failures SET failed_at = failed_at - interval '15 minutes'")
+
+    assert login(anon_client, "ana@resto.ca", test_password).status_code == 200
+
+
+def test_a_successful_login_wipes_earlier_failures(
+    conn, anon_client, make_user, test_password
+) -> None:
+    make_user("ana@resto.ca")
+    fail_logins(anon_client, "ana@resto.ca", times=4)
+    assert login(anon_client, "ana@resto.ca", test_password).status_code == 200
+    assert failure_count(conn, "ana@resto.ca") == 0
+
+    # 8 failures within 15 minutes, but only 4 since the last success
+    fail_logins(anon_client, "ana@resto.ca", times=4)
+    assert login(anon_client, "ana@resto.ca", test_password).status_code == 200
+
+
+def test_twenty_failures_in_a_day_lock_the_email(
+    conn, anon_client, make_user, test_password
+) -> None:
+    make_user("ana@resto.ca")
+    # 20 failures two hours ago (one row per number from 1 to 20)
+    conn.execute(
+        """
+        INSERT INTO login_failures (email, failed_at)
+        SELECT 'ana@resto.ca', now() - interval '2 hours' FROM generate_series(1, 20)
+        """
+    )
+
+    response = login(anon_client, "ana@resto.ca", test_password)
+
+    assert response.status_code == 429
+    assert response.json()["detail"]["context"] == {"minutes": 22 * 60}
+
+
+def test_an_owner_password_reset_unlocks_the_staff_member(
+    client, make_client, make_user
+) -> None:
+    staff_id = make_user("bo@resto.ca")
+    fail_logins(make_client(), "bo@resto.ca")
+    assert login(make_client(), "bo@resto.ca", "brand-new-pass").status_code == 429
+
+    response = client.put(
+        f"/api/users/{staff_id}/password", json={"password": "brand-new-pass"}
+    )
+
+    assert response.status_code == 204
+    assert login(make_client(), "bo@resto.ca", "brand-new-pass").status_code == 200
+
+
+def test_failures_older_than_a_day_are_deleted_at_the_next_login(
+    conn, anon_client, make_user, test_password
+) -> None:
+    make_user("ana@resto.ca")
+    conn.execute(
+        """
+        INSERT INTO login_failures (email, failed_at) VALUES
+            ('old@resto.ca', now() - interval '25 hours'),
+            ('recent@resto.ca', now() - interval '1 hour')
+        """
+    )
+
+    assert login(anon_client, "ana@resto.ca", test_password).status_code == 200
+
+    left = [row["email"] for row in conn.execute("SELECT email FROM login_failures")]
+    assert left == ["recent@resto.ca"]
 
 
 # --- every route is protected -----------------------------------------------

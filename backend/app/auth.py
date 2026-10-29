@@ -7,14 +7,18 @@
   the token's SHA-256 hash, so a database copy can't be used to log in.
 - Two roles. "owner": everything. "staff": enter invoices and look around;
   confirming lines, posting, the catalog and staff accounts are owner-only.
+- Brute-force protection: an email address with too many wrong passwords
+  is refused for a while (see LOGIN_LIMITS).
 
 Errors are i18n payloads like everywhere else (see errors.py).
 """
 
 import hashlib
+import math
 import re
 import secrets
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 
 import psycopg
 from argon2 import PasswordHasher
@@ -25,10 +29,19 @@ from pydantic import BaseModel, Field
 
 from app.config import settings
 from app.deps import get_db
-from app.errors import api_error
+from app.errors import api_error, api_error_response
 
 SESSION_COOKIE = "session"
 MIN_PASSWORD_LENGTH = 8
+
+# Brute-force protection. Each (max failures, window) pair limits one email
+# address, whether or not an account has it: max_failures wrong passwords
+# within the window refuse that email until enough of them are older than
+# the window. The short limit stops quick guessing; the daily one caps a
+# patient attacker at about 20 guesses per account per day.
+LOGIN_LIMITS = [(5, timedelta(minutes=15)), (20, timedelta(hours=24))]
+# Older failures count toward no limit, so they are deleted.
+LOGIN_FAILURES_KEPT = max(window for _, window in LOGIN_LIMITS)
 
 _hasher = PasswordHasher()  # argon2id, the library's recommended settings
 # Checked against when an email is unknown, so a wrong email takes as long
@@ -64,6 +77,26 @@ def looks_like_email(email: str) -> bool:
 
 def _token_hash(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
+
+
+def locked_until(failures: list[datetime], now: datetime) -> datetime | None:
+    """When an email whose logins failed at these times may try again, or
+    None if it may try now (see LOGIN_LIMITS)."""
+    ends = []
+    for max_failures, window in LOGIN_LIMITS:
+        recent = sorted((t for t in failures if t > now - window), reverse=True)
+        if len(recent) >= max_failures:
+            # Once the max_failures-th newest is older than the window,
+            # fewer than max_failures are left inside it.
+            ends.append(recent[max_failures - 1] + window)
+    return max(ends, default=None)
+
+
+def _email_lock_key(email: str) -> int:
+    """The number naming this email's lock in Postgres (advisory locks are
+    named by a 64-bit integer, so the email is hashed down to one)."""
+    digest = hashlib.sha256(email.encode()).digest()
+    return int.from_bytes(digest[:8], "big", signed=True)
 
 
 # ---------------------------------------------------------------------------
@@ -124,15 +157,52 @@ class LoginIn(BaseModel):
 def login(
     body: LoginIn, response: Response, conn: psycopg.Connection = Depends(get_db)
 ):
+    email = normalize_email(body.email)
+    # Logins for one email take turns: this lock is held until the request's
+    # transaction ends. Otherwise a burst of parallel guesses would all pass
+    # the check below before any of their failures was saved.
+    conn.execute("SELECT pg_advisory_xact_lock(%s)", (_email_lock_key(email),))
+    now = conn.execute("SELECT now()").fetchone()["now"]
+    failures = [
+        row["failed_at"]
+        for row in conn.execute(
+            "SELECT failed_at FROM login_failures WHERE email = %s AND failed_at > %s",
+            (email, now - LOGIN_FAILURES_KEPT),
+        )
+    ]
+    until = locked_until(failures, now)
+    if until is not None:
+        # Refused without looking at the password or the account: during a
+        # lock even the right password fails (or the lock would tell an
+        # attacker when they guessed right), and an unknown email gets the
+        # very same answer as a real one. Not counted as another failure.
+        seconds = math.ceil((until - now).total_seconds())
+        return api_error_response(
+            429,
+            "authError.tooManyAttempts",
+            headers={"Retry-After": str(seconds)},
+            minutes=math.ceil(seconds / 60),
+        )
+
     user = conn.execute(
         "SELECT id, email, role, password_hash FROM users WHERE email = %s AND active",
-        (normalize_email(body.email),),
+        (email,),
     ).fetchone()
     # Same error, and about the same time, whether the email or the password
     # was wrong (or the account was deactivated).
     known_hash = user["password_hash"] if user else _DUMMY_HASH
     if not password_matches(known_hash, body.password) or user is None:
-        raise api_error(401, "authError.invalidCredentials")
+        conn.execute("INSERT INTO login_failures (email) VALUES (%s)", (email,))
+        # Returned, not raised: get_db undoes everything a raising request
+        # wrote, which would erase the failure just recorded.
+        return api_error_response(401, "authError.invalidCredentials")
+
+    # The right password wipes this email's slate; failures too old to
+    # count toward any limit are dropped for everyone.
+    conn.execute("DELETE FROM login_failures WHERE email = %s", (email,))
+    conn.execute(
+        "DELETE FROM login_failures WHERE failed_at < %s", (now - LOGIN_FAILURES_KEPT,)
+    )
 
     token = secrets.token_urlsafe(32)
     conn.execute(
@@ -257,10 +327,12 @@ def reset_password(
 ):
     _check_password(body.password)
     user = conn.execute(
-        "UPDATE users SET password_hash = %s WHERE id = %s RETURNING id",
+        "UPDATE users SET password_hash = %s WHERE id = %s RETURNING id, email",
         (hash_password(body.password), user_id),
     ).fetchone()
     if user is None:
         raise api_error(404, "userError.notFound", userId=user_id)
-    # sessions opened with the old password end now
+    # sessions opened with the old password end now, and a lock from earlier
+    # wrong passwords is lifted, so the new password works at once
     conn.execute("DELETE FROM sessions WHERE user_id = %s", (user_id,))
+    conn.execute("DELETE FROM login_failures WHERE email = %s", (user["email"],))
