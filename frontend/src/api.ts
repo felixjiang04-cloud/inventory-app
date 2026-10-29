@@ -78,6 +78,10 @@ export const api = {
     request<T>(path, { method: 'POST', body: JSON.stringify(body) }),
   put: <T>(path: string, body: unknown) =>
     request<T>(path, { method: 'PUT', body: JSON.stringify(body) }),
+  // Files (e.g. a photo): no JSON content type, so the browser can set the
+  // multipart one itself.
+  upload: <T>(path: string, form: FormData) =>
+    request<T>(path, { method: 'POST', body: form, headers: {} }),
 }
 
 // --- shared response types -------------------------------------------------
@@ -127,6 +131,38 @@ export interface InvoiceDetail {
   total_cents: number
   status: string
   lines: InvoiceLine[]
+  photo_id: number | null // the photo this invoice was read from, if any
+}
+
+// What the AI read from a photo, as form text, after deterministic checks
+// (backend app/extraction.py). Problems are i18n codes.
+export interface InvoiceDraft {
+  supplier_name_read: string
+  supplier_id: number | null
+  invoice_number: string
+  invoice_date: string // YYYY-MM-DD, or '' when it couldn't be read for sure
+  invoice_date_read: string
+  lines: { raw_text: string; quantity: string; line_total: string }[]
+  subtotal: string
+  gst: string
+  qst: string
+  other_tax: string
+  total: string
+  problems: { code: string; context: Record<string, unknown> }[]
+}
+
+export interface PhotoResult {
+  id: number
+  status: 'waiting' | 'read' | 'failed'
+  draft: InvoiceDraft | null
+  invoice_id?: number | null // set once the photo was saved as an invoice
+}
+
+export interface PendingPhoto {
+  id: number
+  status: 'waiting' | 'read' | 'failed'
+  uploaded_at: string
+  uploaded_by: string
 }
 
 export interface Suggestion {
