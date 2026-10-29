@@ -1,9 +1,10 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 
 import type { InvoiceDetail } from '../api'
-import { fakeFetch } from '../test/fakeFetch'
+import { fakeFetch, sentBody } from '../test/fakeFetch'
 import ReviewInvoice from './ReviewInvoice'
 
 const invoice: InvoiceDetail = {
@@ -63,5 +64,86 @@ describe('ReviewInvoice error display', () => {
     renderPage()
     expect(await screen.findByText(NETWORK)).toBeInTheDocument()
     expect(screen.queryByText('Loading…')).not.toBeInTheDocument()
+  })
+})
+
+describe('ReviewInvoice saved spellings', () => {
+  const conflict = {
+    status: 409,
+    body: {
+      detail: {
+        code: 'confirmError.aliasConflict',
+        context: {
+          savedItemName: 'Tomates Roma',
+          savedQtyPerUnit: 5000,
+          savedBaseUnit: 'g',
+          newItemName: 'Tomates Roma',
+          newQtyPerUnit: 4000,
+          newBaseUnit: 'g',
+        },
+      },
+    },
+  }
+
+  it('asks which values win, then sends the owner\'s choice', async () => {
+    const user = userEvent.setup()
+    const fetchMock = fakeFetch({
+      '/api/invoices/1': { body: invoice },
+      '/api/items': { body: [{ id: 5, name: 'Tomates Roma', base_unit: 'g' }] },
+      '/api/invoice-lines/10/suggestions': { body: [] },
+      'PUT /api/invoice-lines/10/confirm': [conflict, { body: {} }],
+    })
+    renderPage()
+
+    await user.selectOptions(await screen.findByRole('combobox'), '5')
+    const qty = screen.getByLabelText(/one invoice unit/i)
+    await user.clear(qty)
+    await user.type(qty, '4000')
+    await user.click(screen.getByRole('button', { name: 'Confirm' }))
+
+    // the saved and the new values are both shown before anything changes
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'already saved as Tomates Roma, 1 unit = 5,000 g. You entered Tomates Roma, 1 unit = 4,000 g.',
+    )
+    await user.click(screen.getByRole('button', { name: 'Use only for this invoice' }))
+
+    const path = '/api/invoice-lines/10/confirm'
+    expect(sentBody(fetchMock, path, 0).alias_choice).toBeNull()
+    expect(sentBody(fetchMock, path, 1)).toEqual({
+      item_id: 5,
+      qty_per_unit: 4000,
+      alias_choice: 'line_only',
+    })
+  })
+
+  const confirmedLine = {
+    ...invoice.lines[0],
+    item_id: 5,
+    item_name: 'Tomates Roma',
+    item_base_unit: 'g',
+    qty_canonical: 10000,
+  }
+
+  it('reopens a confirmed line of a pending invoice with "Change"', async () => {
+    const user = userEvent.setup()
+    fakeFetch({
+      '/api/invoices/1': { body: { ...invoice, lines: [confirmedLine] } },
+      '/api/items': { body: [{ id: 5, name: 'Tomates Roma', base_unit: 'g' }] },
+      '/api/invoice-lines/10/suggestions': { body: [] },
+    })
+    renderPage()
+    await user.click(await screen.findByRole('button', { name: 'Change' }))
+    expect(screen.getByRole('combobox')).toHaveValue('5') // current item kept
+    expect(screen.getByRole('button', { name: 'Confirm' })).toBeInTheDocument()
+  })
+
+  it('offers no "Change" once the invoice is posted', async () => {
+    fakeFetch({
+      '/api/invoices/1': { body: { ...invoice, status: 'posted', lines: [confirmedLine] } },
+      '/api/items': { body: [] },
+    })
+    renderPage()
+    expect(await screen.findByText(/10,000 g recorded/)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Change' })).not.toBeInTheDocument()
   })
 })

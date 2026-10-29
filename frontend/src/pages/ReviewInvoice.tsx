@@ -13,20 +13,36 @@ import type {
 import ErrorMessage from '../components/ErrorMessage'
 import { formatCents, formatQty } from '../format'
 
+type AliasChoice = 'update' | 'line_only'
+
+// The values in a confirmError.aliasConflict, ready for the message.
+function aliasConflictVars(context: Record<string, unknown>) {
+  return {
+    savedItem: String(context.savedItemName),
+    savedQty: formatQty(Number(context.savedQtyPerUnit), String(context.savedBaseUnit)),
+    newItem: String(context.newItemName),
+    newQty: formatQty(Number(context.newQtyPerUnit), String(context.newBaseUnit)),
+  }
+}
+
 function LineCard({
   line,
   items,
+  editable,
   onConfirmed,
   onItemCreated,
 }: {
   line: InvoiceLine
   items: Item[]
+  editable: boolean // invoice still pending, so a confirmed line can change
   onConfirmed: () => void
   onItemCreated: (item: Item) => void
 }) {
   const { t, i18n } = useTranslation()
   const [suggestions, setSuggestions] = useState<Suggestion[]>([])
-  const [itemId, setItemId] = useState('')
+  const [itemId, setItemId] = useState(
+    line.item_id !== null ? String(line.item_id) : '',
+  )
   const [qtyPerUnit, setQtyPerUnit] = useState(
     line.prefill ? String(line.prefill.qtyPerUnit) : '',
   )
@@ -36,19 +52,24 @@ function LineCard({
     (line.prefill?.baseUnit as 'g' | 'ml' | 'each') ?? 'g',
   )
   const [error, setError] = useState<ApiError | null>(null)
+  // re-opening an already-confirmed line (e.g. the pack size changed)
+  const [editing, setEditing] = useState(false)
+  // this spelling is saved with other values: the owner must pick which wins
+  const [conflict, setConflict] = useState<ApiError | null>(null)
 
   const confirmed = line.item_id !== null
+  const showForm = !confirmed || editing
 
   useEffect(() => {
-    if (!confirmed) {
+    if (showForm) {
       api
         .get<Suggestion[]>(`/api/invoice-lines/${line.id}/suggestions`)
         .then(setSuggestions)
         .catch((e) => setError(toApiError(e)))
     }
-  }, [line.id, confirmed])
+  }, [line.id, showForm])
 
-  if (confirmed) {
+  if (!showForm) {
     return (
       <div className="line-card confirmed">
         <strong>{line.raw_text}</strong>
@@ -58,8 +79,32 @@ function LineCard({
             qty: formatQty(line.qty_canonical ?? 0, line.item_base_unit ?? ''),
           })}
         </span>
+        {editable && (
+          <span>
+            <button type="button" onClick={() => setEditing(true)}>
+              {t('review.change')}
+            </button>
+          </span>
+        )}
       </div>
     )
+  }
+
+  // Changing the values makes an open "which wins?" question stale.
+  function chooseItem(id: string) {
+    setItemId(id)
+    setConflict(null)
+  }
+
+  function chooseQty(qty: string) {
+    setQtyPerUnit(qty)
+    setConflict(null)
+  }
+
+  function cancelEditing() {
+    setEditing(false)
+    setConflict(null)
+    setError(null)
   }
 
   async function createItem() {
@@ -78,16 +123,25 @@ function LineCard({
     }
   }
 
-  async function confirm() {
+  async function confirm(aliasChoice?: AliasChoice) {
     setError(null)
     try {
       await api.put(`/api/invoice-lines/${line.id}/confirm`, {
         item_id: Number(itemId),
         qty_per_unit: Number(qtyPerUnit),
+        alias_choice: aliasChoice ?? null,
       })
+      setConflict(null)
+      setEditing(false)
       onConfirmed()
     } catch (e) {
-      setError(toApiError(e))
+      const apiError = toApiError(e)
+      if (apiError.code === 'confirmError.aliasConflict') {
+        setConflict(apiError)
+      } else {
+        setConflict(null)
+        setError(apiError)
+      }
     }
   }
 
@@ -113,8 +167,8 @@ function LineCard({
             type="button"
             className="chip"
             onClick={() => {
-              setItemId(String(s.item_id))
-              if (s.qty_per_unit) setQtyPerUnit(String(s.qty_per_unit))
+              chooseItem(String(s.item_id))
+              if (s.qty_per_unit) chooseQty(String(s.qty_per_unit))
             }}
           >
             {s.name}
@@ -124,7 +178,7 @@ function LineCard({
       </div>
 
       <span className="row">
-        <select value={itemId} onChange={(e) => setItemId(e.target.value)}>
+        <select value={itemId} onChange={(e) => chooseItem(e.target.value)}>
           <option value="" disabled>
             {t('review.chooseItem')}
           </option>
@@ -170,18 +224,44 @@ function LineCard({
         <input
           className="narrow"
           value={qtyPerUnit}
-          onChange={(e) => setQtyPerUnit(e.target.value)}
+          onChange={(e) => chooseQty(e.target.value)}
         />
       </label>
 
+      {conflict && (
+        <div className="warning-box" role="alert">
+          <p>{t('review.aliasConflict', aliasConflictVars(conflict.context))}</p>
+          <span className="row">
+            <button type="button" onClick={() => confirm('update')}>
+              {t('review.aliasUpdate')}
+            </button>
+            <button type="button" onClick={() => confirm('line_only')}>
+              {t('review.aliasLineOnly')}
+            </button>
+            <button type="button" onClick={() => setConflict(null)}>
+              {t('common.cancel')}
+            </button>
+          </span>
+        </div>
+      )}
+
       <ErrorMessage error={error} />
-      <button
-        type="button"
-        disabled={!itemId || !qtyPerUnit}
-        onClick={confirm}
-      >
-        {t('review.confirmLine')}
-      </button>
+      {!conflict && (
+        <span className="row">
+          <button
+            type="button"
+            disabled={!itemId || !qtyPerUnit}
+            onClick={() => confirm()}
+          >
+            {t('review.confirmLine')}
+          </button>
+          {editing && (
+            <button type="button" onClick={cancelEditing}>
+              {t('common.cancel')}
+            </button>
+          )}
+        </span>
+      )}
     </div>
   )
 }
@@ -272,6 +352,7 @@ export default function ReviewInvoice() {
           key={line.id}
           line={line}
           items={items}
+          editable={invoice.status === 'pending_review'}
           onConfirmed={reload}
           onItemCreated={(item) =>
             setItems((old) =>

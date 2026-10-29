@@ -167,3 +167,89 @@ def test_confirm_rejects_weight_line_on_volume_item(client, conn) -> None:
         json={"item_id": tomato_case, "qty_per_unit": 1},
     )
     assert response.status_code == 200
+
+
+# --- saved spellings ("aliases") never change silently ----------------------
+
+
+def confirm(client, line_id, item_id, qty_per_unit, alias_choice=None):
+    body = {"item_id": item_id, "qty_per_unit": qty_per_unit}
+    if alias_choice is not None:
+        body["alias_choice"] = alias_choice
+    return client.put(f"/api/invoice-lines/{line_id}/confirm", json=body)
+
+
+def saved_alias(conn, raw_text):
+    return conn.execute(
+        "SELECT item_id, qty_per_unit FROM item_aliases WHERE raw_text = %s",
+        (raw_text,),
+    ).fetchone()
+
+
+def tomato_spelling_saved_as_5kg(client):
+    """Two pending invoices with "TOMATE ROMA 5KG"; the first is confirmed
+    as 5000 g per case. Returns (tomatoes item id, second line id)."""
+    supplier = make_supplier(client)
+    tomatoes = make_item(client, "Tomates Roma")
+    first = make_invoice(client, supplier).json()["id"]
+    second = make_invoice(client, supplier, invoice_number="F-1002").json()["id"]
+    line_1 = client.get(f"/api/invoices/{first}").json()["lines"][0]
+    line_2 = client.get(f"/api/invoices/{second}").json()["lines"][0]
+    assert confirm(client, line_1["id"], tomatoes, 5000).status_code == 200
+    return tomatoes, line_2["id"]
+
+
+def test_changing_a_saved_spelling_asks_first(client, conn) -> None:
+    tomatoes, line_id = tomato_spelling_saved_as_5kg(client)
+
+    # same text, but now 4 kg per case: refused until the owner chooses
+    response = confirm(client, line_id, tomatoes, 4000)
+    assert response.status_code == 409
+    assert response.json()["detail"] == {
+        "code": "confirmError.aliasConflict",
+        "context": {
+            "savedItemName": "Tomates Roma",
+            "savedQtyPerUnit": 5000,
+            "savedBaseUnit": "g",
+            "newItemName": "Tomates Roma",
+            "newQtyPerUnit": 4000,
+            "newBaseUnit": "g",
+        },
+    }
+    # nothing was written
+    line = conn.execute(
+        "SELECT item_id FROM invoice_lines WHERE id = %s", (line_id,)
+    ).fetchone()
+    assert line["item_id"] is None
+    assert saved_alias(conn, "TOMATE ROMA 5KG") == {
+        "item_id": tomatoes,
+        "qty_per_unit": 5000,
+    }
+
+
+def test_line_only_choice_keeps_the_saved_spelling(client, conn) -> None:
+    tomatoes, line_id = tomato_spelling_saved_as_5kg(client)
+
+    response = confirm(client, line_id, tomatoes, 4000, alias_choice="line_only")
+
+    assert response.status_code == 200
+    assert response.json()["qty_canonical"] == 8000  # 2 cases x 4000 g
+    assert saved_alias(conn, "TOMATE ROMA 5KG")["qty_per_unit"] == 5000
+
+
+def test_update_choice_changes_future_invoices(client, conn) -> None:
+    tomatoes, line_id = tomato_spelling_saved_as_5kg(client)
+
+    response = confirm(client, line_id, tomatoes, 4000, alias_choice="update")
+
+    assert response.status_code == 200
+    assert saved_alias(conn, "TOMATE ROMA 5KG")["qty_per_unit"] == 4000
+    supplier = conn.execute("SELECT id FROM suppliers").fetchone()["id"]
+    later = make_invoice(client, supplier, invoice_number="F-1003").json()["id"]
+    auto_filled = client.get(f"/api/invoices/{later}").json()["lines"][0]
+    assert auto_filled["qty_canonical"] == 8000
+
+
+def test_reconfirming_identical_values_needs_no_choice(client) -> None:
+    tomatoes, line_id = tomato_spelling_saved_as_5kg(client)
+    assert confirm(client, line_id, tomatoes, 5000).status_code == 200

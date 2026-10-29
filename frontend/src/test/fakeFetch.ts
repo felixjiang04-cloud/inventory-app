@@ -10,13 +10,24 @@ export type FakeRoute =
   | Error
 
 // Replace the browser's fetch with a fake that answers by "METHOD /path"
-// (a plain "/path" key means GET). Returns the mock so tests can inspect
+// (a plain "/path" key means GET). A list of answers is used in order, one
+// per request (the last one repeats). Returns the mock so tests can inspect
 // which requests were sent and with what body.
-export function fakeFetch(routes: Record<string, FakeRoute>) {
+export function fakeFetch(routes: Record<string, FakeRoute | FakeRoute[]>) {
+  const timesCalled: Record<string, number> = {}
   const mock = vi.fn(async (path: string, init?: RequestInit) => {
     const method = init?.method ?? 'GET'
-    const route =
-      routes[`${method} ${path}`] ?? (method === 'GET' ? routes[path] : undefined)
+    const methodKey = `${method} ${path}`
+    const key = methodKey in routes ? methodKey : method === 'GET' ? path : ''
+    const answers = routes[key]
+    let route: FakeRoute | undefined
+    if (Array.isArray(answers)) {
+      const n = timesCalled[key] ?? 0
+      timesCalled[key] = n + 1
+      route = answers[Math.min(n, answers.length - 1)]
+    } else {
+      route = answers
+    }
     if (route === undefined) {
       // shows up on screen as an untranslated key, so the test fails loudly
       return Response.json(

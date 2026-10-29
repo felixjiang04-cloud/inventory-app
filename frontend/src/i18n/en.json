@@ -73,7 +73,11 @@
     "confirmedAs": "{{qty}} recorded",
     "post": "Post to ledger",
     "posted": "Posted! New stock levels:",
-    "backToQueue": "Back to the queue"
+    "backToQueue": "Back to the queue",
+    "change": "Change",
+    "aliasConflict": "This spelling is already saved as {{savedItem}}, 1 unit = {{savedQty}}. You entered {{newItem}}, 1 unit = {{newQty}}.",
+    "aliasUpdate": "Update it for future invoices",
+    "aliasLineOnly": "Use only for this invoice"
   },
   "invoiceError": {
     "noLines": "The invoice has no lines.",
@@ -103,6 +107,7 @@
     "network": "Could not reach the server. Check your connection and try again."
   },
   "confirmError": {
-    "unitMismatch": "The invoice text is in {{textUnit}}, but this item is counted in {{itemUnit}}. Weight and volume can't be converted into each other — pick another item, or create one counted in {{textUnit}}."
+    "unitMismatch": "The invoice text is in {{textUnit}}, but this item is counted in {{itemUnit}}. Weight and volume can't be converted into each other — pick another item, or create one counted in {{textUnit}}.",
+    "aliasConflict": "This spelling is already saved with a different item or pack size."
   }
 }

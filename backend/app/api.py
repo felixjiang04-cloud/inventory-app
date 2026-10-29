@@ -337,6 +337,11 @@ def line_suggestions(line_id: int, conn: psycopg.Connection = Depends(get_db)):
 class ConfirmLineIn(BaseModel):
     item_id: int
     qty_per_unit: int = Field(gt=0)  # base units per ONE invoice unit
+    # Only needed when this supplier's spelling is already saved with a
+    # DIFFERENT item or pack size — the owner must say which wins:
+    #   "update"    = use the new values now AND for future invoices
+    #   "line_only" = use the new values on this line, keep the saved ones
+    alias_choice: Literal["update", "line_only"] | None = None
 
 
 @router.put("/invoice-lines/{line_id}/confirm")
@@ -373,6 +378,33 @@ def confirm_line(
             itemUnit=item["base_unit"],
         )
 
+    # A saved spelling fills in every future invoice automatically, so it
+    # must never change silently: if the new values differ, ask first.
+    saved = conn.execute(
+        """
+        SELECT a.item_id, a.qty_per_unit, it.name, it.base_unit
+        FROM item_aliases a JOIN items it ON it.id = a.item_id
+        WHERE a.supplier_id = %s AND a.raw_text = %s
+              AND a.confirmed_at IS NOT NULL
+        """,
+        (line["supplier_id"], line["raw_text"]),
+    ).fetchone()
+    differs = saved is not None and (
+        saved["item_id"] != body.item_id or saved["qty_per_unit"] != body.qty_per_unit
+    )
+    if differs and body.alias_choice is None:
+        raise _error(
+            409,
+            "confirmError.aliasConflict",
+            savedItemName=saved["name"],
+            savedQtyPerUnit=saved["qty_per_unit"],
+            savedBaseUnit=saved["base_unit"],
+            newItemName=item["name"],
+            newQtyPerUnit=body.qty_per_unit,
+            newBaseUnit=item["base_unit"],
+        )
+    keep_saved_alias = differs and body.alias_choice == "line_only"
+
     qty_canonical = int(
         Fraction(line["quantity"]) * body.qty_per_unit + Fraction(1, 2)
     )
@@ -381,18 +413,24 @@ def confirm_line(
             "UPDATE invoice_lines SET item_id = %s, qty_canonical = %s WHERE id = %s",
             (body.item_id, qty_canonical, line_id),
         )
-        conn.execute(
-            """
-            INSERT INTO item_aliases (supplier_id, raw_text, item_id,
-                                      qty_per_unit, confirmed_at)
-            VALUES (%s, %s, %s, %s, now())
-            ON CONFLICT (supplier_id, raw_text)
-            DO UPDATE SET item_id = EXCLUDED.item_id,
-                          qty_per_unit = EXCLUDED.qty_per_unit,
-                          confirmed_at = now()
-            """,
-            (line["supplier_id"], line["raw_text"], body.item_id, body.qty_per_unit),
-        )
+        if not keep_saved_alias:
+            conn.execute(
+                """
+                INSERT INTO item_aliases (supplier_id, raw_text, item_id,
+                                          qty_per_unit, confirmed_at)
+                VALUES (%s, %s, %s, %s, now())
+                ON CONFLICT (supplier_id, raw_text)
+                DO UPDATE SET item_id = EXCLUDED.item_id,
+                              qty_per_unit = EXCLUDED.qty_per_unit,
+                              confirmed_at = now()
+                """,
+                (
+                    line["supplier_id"],
+                    line["raw_text"],
+                    body.item_id,
+                    body.qty_per_unit,
+                ),
+            )
     return {
         "id": line_id,
         "item_id": body.item_id,

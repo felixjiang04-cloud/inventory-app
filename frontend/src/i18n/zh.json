@@ -73,7 +73,11 @@
     "confirmedAs": "已记录 {{qty}}",
     "post": "入账",
     "posted": "已入账！最新库存：",
-    "backToQueue": "返回队列"
+    "backToQueue": "返回队列",
+    "change": "修改",
+    "aliasConflict": "该写法已保存为：{{savedItem}}，每单位 = {{savedQty}}。您输入的是：{{newItem}}，每单位 = {{newQty}}。",
+    "aliasUpdate": "更新，以后的发票也照此计算",
+    "aliasLineOnly": "仅用于这张发票"
   },
   "invoiceError": {
     "noLines": "发票没有明细行。",
@@ -103,6 +107,7 @@
     "network": "无法连接服务器，请检查网络后重试。"
   },
   "confirmError": {
-    "unitMismatch": "发票上的单位是{{textUnit}}，但该货品以{{itemUnit}}计量。重量和容量无法互相换算——请选择其他货品，或新建一个以{{textUnit}}计量的货品。"
+    "unitMismatch": "发票上的单位是{{textUnit}}，但该货品以{{itemUnit}}计量。重量和容量无法互相换算——请选择其他货品，或新建一个以{{textUnit}}计量的货品。",
+    "aliasConflict": "该写法已保存为其他货品或其他包装规格。"
   }
 }

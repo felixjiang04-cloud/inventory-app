@@ -73,7 +73,11 @@
     "confirmedAs": "{{qty}} enregistré",
     "post": "Comptabiliser",
     "posted": "Comptabilisée ! Nouveaux niveaux de stock :",
-    "backToQueue": "Retour à la file"
+    "backToQueue": "Retour à la file",
+    "change": "Modifier",
+    "aliasConflict": "Cette appellation est déjà enregistrée : {{savedItem}}, 1 unité = {{savedQty}}. Vous avez saisi : {{newItem}}, 1 unité = {{newQty}}.",
+    "aliasUpdate": "Mettre à jour pour les prochaines factures",
+    "aliasLineOnly": "Seulement pour cette facture"
   },
   "invoiceError": {
     "noLines": "La facture n'a aucune ligne.",
@@ -103,6 +107,7 @@
     "network": "Impossible de joindre le serveur. Vérifiez votre connexion et réessayez."
   },
   "confirmError": {
-    "unitMismatch": "Le texte de la facture est en {{textUnit}}, mais cet article est compté en {{itemUnit}}. Le poids et le volume ne se convertissent pas l'un en l'autre — choisissez un autre article ou créez-en un compté en {{textUnit}}."
+    "unitMismatch": "Le texte de la facture est en {{textUnit}}, mais cet article est compté en {{itemUnit}}. Le poids et le volume ne se convertissent pas l'un en l'autre — choisissez un autre article ou créez-en un compté en {{textUnit}}.",
+    "aliasConflict": "Cette appellation est déjà enregistrée avec un autre article ou un autre format."
   }
 }
