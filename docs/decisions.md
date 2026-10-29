@@ -87,3 +87,35 @@ Newest entries at the bottom.
 - **CI on every push.** GitHub Actions runs pytest against a throwaway
   Postgres 17 (database tests must run there, never skip) plus the
   frontend lint, Vitest tests and build.
+
+## 2026-10-29 — Login brute-force protection
+
+- **Wrong passwords are counted per email address**, from any computer
+  (table `login_failures`). 5 misses within 15 minutes, or 20 within 24
+  hours, lock that email until enough of them are older than the window.
+  An attacker gets about 20 guesses per account per day; someone fumbling
+  their password waits 15 minutes at worst. The limits are a constant
+  (`LOGIN_LIMITS` in auth.py), not a setting.
+- **A lock reveals nothing.** Unknown emails are counted and locked exactly
+  like real ones. A locked email is refused (429 + Retry-After, message
+  "try again in 12 min") before the password or the account is looked at:
+  even the right password fails, so the answer never says whether a guess
+  was right or an account exists. Refused tries don't count, so hammering
+  a locked email doesn't extend the lock.
+- **Getting back in:** wait, or the owner resets the staff member's
+  password, which lifts the lock. Devices already logged in are never
+  affected. Known trade-off: someone who knows an email (e.g. the
+  owner's) can keep it locked by repeating wrong passwords; only new
+  logins are blocked. There is no unlock command for a locked-out owner.
+- **Login failures are returned, not raised.** get_db rolls back
+  everything a raising request wrote, which would silently erase each
+  failure. Test requests now run in a savepoint rolled back the same way,
+  so tests see what production sees (they would have passed otherwise).
+- **Logins for one email take turns** (a Postgres advisory lock held until
+  the request's transaction ends), so a burst of parallel guesses can't
+  all slip past the check before their failures are saved.
+- **Failures are kept a day**, then deleted at the next successful login.
+- **No per-IP limit yet.** It needs each visitor's real address, which
+  depends on the hosting's proxy setup; misconfigured, every visitor
+  would share the proxy's address and one attacker would lock everyone
+  out. Revisit when choosing hosting.
