@@ -20,7 +20,8 @@
   "unit": {
     "g": "grammes (g)",
     "ml": "millilitres (ml)",
-    "each": "unités (à l'unité)"
+    "each": "unités (à l'unité)",
+    "eachShort": "unités"
   },
   "field": {
     "subtotal": "sous-total",

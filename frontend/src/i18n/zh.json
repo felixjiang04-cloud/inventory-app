@@ -20,7 +20,8 @@
   "unit": {
     "g": "克 (g)",
     "ml": "毫升 (ml)",
-    "each": "个"
+    "each": "个",
+    "eachShort": "个"
   },
   "field": {
     "subtotal": "小计",

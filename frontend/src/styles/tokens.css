@@ -1,0 +1,57 @@
+/* Design settings: the only place colours, sizes and spacing are chosen.
+   Everything else refers to these names, so a change here changes the app.
+   Rules behind the choices: docs/design-guidelines.md */
+
+:root {
+  /* Surfaces and text: warm neutrals, not cold blue-greys */
+  --color-bg: #f6f4ef;
+  --color-surface: #ffffff;
+  --color-sunken: #efece5; /* inset areas: hover, table headers */
+  --color-text: #1d1b18;
+  --color-text-muted: #5e584f; /* passes AA contrast on bg and surface */
+  --color-border: #dcd6cb;
+  --color-border-strong: #b5ad9f; /* input outlines */
+  --color-focus: #3d7cc0;
+
+  /* The one accent colour: ink blue. To try another, change these four. */
+  --color-accent: #1f4e79;
+  --color-accent-hover: #163b5c;
+  --color-accent-soft: #e5edf5;
+  --color-on-accent: #ffffff;
+
+  /* Colours that carry meaning, never decoration */
+  --color-ok: #1d6a39; /* confirmed, saved */
+  --color-ok-soft: #e7f2ea;
+  --color-warn: #7d4c00; /* needs checking */
+  --color-warn-soft: #fcf1dc;
+  --color-warn-border: #d4962a;
+  --color-danger: #a3261a; /* errors */
+  --color-danger-soft: #fbeae8;
+
+  /* Type: one family; Chinese falls back to the device's own font */
+  --font-body: 'Source Sans 3 Variable', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Noto Sans CJK SC', system-ui, sans-serif;
+  --text-sm: 0.875rem;
+  --text-md: 1rem; /* never smaller for inputs: phones zoom in below 16 px */
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --weight-strong: 600;
+  --leading: 1.45;
+
+  /* Spacing: steps of 4 px */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+
+  /* Shapes and sizes */
+  --radius: 6px;
+  --tap: 2.75rem; /* 44 px: the smallest thing a thumb should have to hit */
+  --content-width: 46rem;
+  --sidebar-width: 14rem;
+  --tabbar-height: 4.25rem;
+}

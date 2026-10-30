@@ -107,7 +107,7 @@ describe('ReviewInvoice saved spellings', () => {
 
     // the saved and the new values are both shown before anything changes
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'already saved as Tomates Roma, 1 unit = 5,000 g. You entered Tomates Roma, 1 unit = 4,000 g.',
+      'already saved as Tomates Roma, 1 unit = 5 kg. You entered Tomates Roma, 1 unit = 4 kg.',
     )
     await user.click(screen.getByRole('button', { name: 'Use only for this invoice' }))
 
@@ -147,7 +147,7 @@ describe('ReviewInvoice saved spellings', () => {
       '/api/items': { body: [] },
     })
     renderPage()
-    expect(await screen.findByText(/10,000 g recorded/)).toBeInTheDocument()
+    expect(await screen.findByText(/10 kg recorded/)).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Change' })).not.toBeInTheDocument()
   })
 })

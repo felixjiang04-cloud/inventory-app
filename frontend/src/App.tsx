@@ -1,6 +1,6 @@
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Navigate, NavLink, Route, Routes } from 'react-router-dom'
+import { Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom'
 
 import { useAuth } from './auth'
 import ErrorMessage from './components/ErrorMessage'
@@ -13,9 +13,14 @@ import ReviewQueue from './pages/ReviewQueue'
 import Staff from './pages/Staff'
 import './App.css'
 
+// The /style page exists only while developing (`npm run dev`); the
+// production build drops it entirely.
+const StyleGuide = import.meta.env.DEV ? lazy(() => import('./pages/StyleGuide')) : null
+
 function App() {
   const { t, i18n } = useTranslation()
   const { user, error, logout } = useAuth()
+  const location = useLocation()
 
   // Browser tab title and <html lang> follow the chosen language.
   useEffect(() => {
@@ -24,7 +29,13 @@ function App() {
   }, [t, i18n.resolvedLanguage])
 
   let content
-  if (error) {
+  if (StyleGuide && location.pathname === '/style') {
+    content = (
+      <Suspense fallback={null}>
+        <StyleGuide />
+      </Suspense>
+    )
+  } else if (error) {
     content = <ErrorMessage error={error} /> // couldn't even ask who's logged in
   } else if (user === undefined) {
     content = <p>{t('common.loading')}</p>
