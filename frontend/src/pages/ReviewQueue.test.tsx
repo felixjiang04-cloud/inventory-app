@@ -14,6 +14,6 @@ describe('ReviewQueue', () => {
       </MemoryRouter>,
     )
     expect(await screen.findByText(/could not reach the server/i)).toBeInTheDocument()
-    expect(screen.queryByText(/nothing to review/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/nothing to check/i)).not.toBeInTheDocument()
   })
 })

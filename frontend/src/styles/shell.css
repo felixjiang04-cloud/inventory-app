@@ -149,3 +149,15 @@
     padding-bottom: 0;
   }
 }
+
+/* On phones the tab bar covers the bottom edge: keep the main action of a
+   page (Save, Add to stock) just above it. */
+.shell .action-bar {
+  bottom: calc(var(--tabbar-height) + env(safe-area-inset-bottom));
+}
+
+@media (min-width: 900px) {
+  .shell .action-bar {
+    bottom: 0;
+  }
+}

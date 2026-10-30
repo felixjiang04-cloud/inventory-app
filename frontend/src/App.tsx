@@ -13,7 +13,6 @@ import NewInvoice from './pages/NewInvoice'
 import ReviewInvoice from './pages/ReviewInvoice'
 import ReviewQueue from './pages/ReviewQueue'
 import Staff from './pages/Staff'
-import './App.css'
 
 // The /style page exists only while developing (`npm run dev`); the
 // production build drops it entirely.

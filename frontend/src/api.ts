@@ -132,6 +132,7 @@ export interface InvoiceDetail {
   status: string
   lines: InvoiceLine[]
   photo_id: number | null // the photo this invoice was read from, if any
+  posted_at: string | null // when it was added to stock (null before that)
 }
 
 // What the AI read from a photo, as form text, after deterministic checks

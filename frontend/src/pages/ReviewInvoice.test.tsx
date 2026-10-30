@@ -20,6 +20,7 @@ const invoice: InvoiceDetail = {
   total_cents: 3000,
   status: 'pending_review',
   photo_id: null,
+  posted_at: null,
   lines: [
     {
       id: 10,
@@ -164,12 +165,49 @@ describe('ReviewInvoice for staff', () => {
       await screen.findByText('Waiting for the owner to confirm this line.'),
     ).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Confirm' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Post to ledger' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Add to stock' })).not.toBeInTheDocument()
     expect(
-      screen.getByText('Only the owner can post this invoice to the ledger.'),
+      screen.getByText('Only the owner can add this invoice to stock.'),
     ).toBeInTheDocument()
     // and it doesn't even ask for suggestions it can't use
     const paths = fetchMock.mock.calls.map(([path]) => path)
     expect(paths).not.toContain('/api/invoice-lines/10/suggestions')
+  })
+})
+
+describe('ReviewInvoice adding to stock', () => {
+  const allConfirmed = {
+    ...invoice,
+    lines: [
+      {
+        ...invoice.lines[0],
+        item_id: 5,
+        item_name: 'Tomates Roma',
+        item_base_unit: 'g',
+        qty_canonical: 10000,
+      },
+    ],
+  }
+
+  it('offers "Add to stock" once every line is confirmed', async () => {
+    fakeFetch({
+      '/api/invoices/1': { body: allConfirmed },
+      '/api/items': { body: [] },
+    })
+    renderPage()
+    expect(await screen.findByRole('button', { name: 'Add to stock' })).toBeEnabled()
+  })
+
+  it('shows an invoice already added to stock read-only', async () => {
+    fakeFetch({
+      '/api/invoices/1': {
+        body: { ...allConfirmed, status: 'posted', posted_at: '2026-10-02T14:30:00Z' },
+      },
+      '/api/items': { body: [] },
+    })
+    renderPage()
+    expect(await screen.findByText(/^Added to stock/)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Add to stock' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Change' })).not.toBeInTheDocument()
   })
 })

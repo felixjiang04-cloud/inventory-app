@@ -12,17 +12,18 @@ import type {
 } from '../api'
 import { useIsOwner } from '../auth'
 import ErrorMessage from '../components/ErrorMessage'
-import { formatCents, formatQty } from '../format'
+import { useFormat } from '../useFormat'
 
 type AliasChoice = 'update' | 'line_only'
+type Format = ReturnType<typeof useFormat>
 
 // The values in a confirmError.aliasConflict, ready for the message.
-function aliasConflictVars(context: Record<string, unknown>) {
+function aliasConflictVars(context: Record<string, unknown>, format: Format) {
   return {
     savedItem: String(context.savedItemName),
-    savedQty: formatQty(Number(context.savedQtyPerUnit), String(context.savedBaseUnit)),
+    savedQty: format.qty(Number(context.savedQtyPerUnit), String(context.savedBaseUnit)),
     newItem: String(context.newItemName),
-    newQty: formatQty(Number(context.newQtyPerUnit), String(context.newBaseUnit)),
+    newQty: format.qty(Number(context.newQtyPerUnit), String(context.newBaseUnit)),
   }
 }
 
@@ -39,7 +40,8 @@ function LineCard({
   onConfirmed: () => void
   onItemCreated: (item: Item) => void
 }) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
+  const format = useFormat()
   const [suggestions, setSuggestions] = useState<Suggestion[]>([])
   const [itemId, setItemId] = useState(
     line.item_id !== null ? String(line.item_id) : '',
@@ -60,6 +62,7 @@ function LineCard({
 
   const confirmed = line.item_id !== null
   const showForm = canEdit && (!confirmed || editing)
+  const fieldId = (name: string) => `line-${line.id}-${name}`
 
   useEffect(() => {
     if (showForm) {
@@ -70,28 +73,38 @@ function LineCard({
     }
   }, [line.id, showForm])
 
+  const head = (
+    <>
+      <div className="line-card-head">
+        <span className="line-card-text">{line.raw_text}</span>
+        <span className="num">{format.money(line.line_total_cents)}</span>
+      </div>
+      <p className="list-row-meta">
+        {t('newInvoice.quantity')}: {line.quantity}
+      </p>
+    </>
+  )
+
   if (!showForm) {
     return (
-      <div className={confirmed ? 'line-card confirmed' : 'line-card'}>
-        <strong>{line.raw_text}</strong>
+      <li className={confirmed ? 'line-card line-card-done' : 'line-card'}>
+        {head}
         {confirmed ? (
-          <span>
-            {line.item_name} —{' '}
+          <p className="line-card-result">
+            {line.item_name} ·{' '}
             {t('review.confirmedAs', {
-              qty: formatQty(line.qty_canonical ?? 0, line.item_base_unit ?? ''),
+              qty: format.qty(line.qty_canonical ?? 0, line.item_base_unit ?? ''),
             })}
-          </span>
+          </p>
         ) : (
-          <span className="muted">{t('review.waitingForOwner')}</span>
+          <p className="muted">{t('review.waitingForOwner')}</p>
         )}
         {confirmed && canEdit && (
-          <span>
-            <button type="button" onClick={() => setEditing(true)}>
-              {t('review.change')}
-            </button>
-          </span>
+          <button type="button" className="btn btn-quiet" onClick={() => setEditing(true)}>
+            {t('review.change')}
+          </button>
         )}
-      </div>
+      </li>
     )
   }
 
@@ -153,37 +166,40 @@ function LineCard({
   const chosenItem = items.find((i) => String(i.id) === itemId)
 
   return (
-    <div className="line-card">
-      <strong>{line.raw_text}</strong>
-      <span className="muted">
-        {t('newInvoice.quantity')}: {line.quantity} ·{' '}
-        {t('newInvoice.lineTotal')}:{' '}
-        {formatCents(line.line_total_cents, i18n.resolvedLanguage ?? 'en')}
-      </span>
+    <li className="line-card">
+      {head}
 
-      <div>
-        <span className="muted">{t('review.suggestions')}: </span>
-        {suggestions.length === 0 && (
-          <span className="muted">{t('review.noSuggestions')}</span>
+      <div className="field">
+        <span className="field-label">{t('review.suggestions')}</span>
+        {suggestions.length === 0 ? (
+          <p className="field-hint">{t('review.noSuggestions')}</p>
+        ) : (
+          <div className="cluster">
+            {suggestions.map((s) => (
+              <button
+                key={`${s.item_id}-${s.qty_per_unit ?? 'name'}`}
+                type="button"
+                className="chip"
+                onClick={() => {
+                  chooseItem(String(s.item_id))
+                  if (s.qty_per_unit) chooseQty(String(s.qty_per_unit))
+                }}
+              >
+                {s.name}
+                {s.qty_per_unit ? ` (${format.qty(s.qty_per_unit, s.base_unit)})` : ''}
+              </button>
+            ))}
+          </div>
         )}
-        {suggestions.map((s) => (
-          <button
-            key={`${s.item_id}-${s.qty_per_unit ?? 'name'}`}
-            type="button"
-            className="chip"
-            onClick={() => {
-              chooseItem(String(s.item_id))
-              if (s.qty_per_unit) chooseQty(String(s.qty_per_unit))
-            }}
-          >
-            {s.name}
-            {s.qty_per_unit ? ` (${s.qty_per_unit})` : ''}
-          </button>
-        ))}
       </div>
 
-      <span className="row">
-        <select value={itemId} onChange={(e) => chooseItem(e.target.value)}>
+      <div className="field">
+        <label htmlFor={fieldId('item')}>{t('review.item')}</label>
+        <select
+          id={fieldId('item')}
+          value={itemId}
+          onChange={(e) => chooseItem(e.target.value)}
+        >
           <option value="" disabled>
             {t('review.chooseItem')}
           </option>
@@ -193,86 +209,98 @@ function LineCard({
             </option>
           ))}
         </select>
-        <button type="button" onClick={() => setCreating((v) => !v)}>
+        <button type="button" className="btn btn-quiet" onClick={() => setCreating((v) => !v)}>
           {t('review.createNewItem')}
         </button>
-      </span>
+      </div>
 
       {creating && (
-        <span className="row">
-          <input
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            placeholder={t('review.itemName')}
-          />
-          <select
-            value={newUnit}
-            onChange={(e) => setNewUnit(e.target.value as typeof newUnit)}
-            aria-label={t('review.baseUnit')}
-          >
-            {(['g', 'ml', 'each'] as const).map((unit) => (
-              <option key={unit} value={unit}>
-                {t(`unit.${unit}`)}
-              </option>
-            ))}
-          </select>
-          <button type="button" onClick={createItem}>
+        <div className="field-panel">
+          <div className="field">
+            <label htmlFor={fieldId('new-name')}>{t('review.itemName')}</label>
+            <input
+              id={fieldId('new-name')}
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+            />
+          </div>
+          <div className="field">
+            <label htmlFor={fieldId('new-unit')}>{t('review.baseUnit')}</label>
+            <select
+              id={fieldId('new-unit')}
+              value={newUnit}
+              onChange={(e) => setNewUnit(e.target.value as typeof newUnit)}
+            >
+              {(['g', 'ml', 'each'] as const).map((unit) => (
+                <option key={unit} value={unit}>
+                  {t(`unit.${unit}`)}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button type="button" className="btn" onClick={createItem}>
             {t('newInvoice.create')}
           </button>
-        </span>
+        </div>
       )}
 
-      <label>
-        {t('review.qtyPerUnit', {
-          unit: t(`unit.${chosenItem?.base_unit ?? 'g'}`),
-        })}
+      <div className="field">
+        <label htmlFor={fieldId('qty-per-unit')}>
+          {t('review.qtyPerUnit', {
+            unit: t(`unit.${chosenItem?.base_unit ?? 'g'}`),
+          })}
+        </label>
         <input
-          className="narrow"
+          id={fieldId('qty-per-unit')}
+          className="num"
+          inputMode="numeric"
           value={qtyPerUnit}
           onChange={(e) => chooseQty(e.target.value)}
         />
-      </label>
+      </div>
 
       {conflict && (
-        <div className="warning-box" role="alert">
-          <p>{t('review.aliasConflict', aliasConflictVars(conflict.context))}</p>
-          <span className="row">
-            <button type="button" onClick={() => confirm('update')}>
+        <div className="notice notice-warn" role="alert">
+          <p>{t('review.aliasConflict', aliasConflictVars(conflict.context, format))}</p>
+          <div className="cluster notice-actions">
+            <button type="button" className="btn" onClick={() => confirm('update')}>
               {t('review.aliasUpdate')}
             </button>
-            <button type="button" onClick={() => confirm('line_only')}>
+            <button type="button" className="btn" onClick={() => confirm('line_only')}>
               {t('review.aliasLineOnly')}
             </button>
-            <button type="button" onClick={() => setConflict(null)}>
+            <button type="button" className="btn btn-quiet" onClick={() => setConflict(null)}>
               {t('common.cancel')}
             </button>
-          </span>
+          </div>
         </div>
       )}
 
       <ErrorMessage error={error} />
       {!conflict && (
-        <span className="row">
+        <div className="cluster">
           <button
             type="button"
+            className="btn btn-primary"
             disabled={!itemId || !qtyPerUnit}
             onClick={() => confirm()}
           >
             {t('review.confirmLine')}
           </button>
           {editing && (
-            <button type="button" onClick={cancelEditing}>
+            <button type="button" className="btn btn-quiet" onClick={cancelEditing}>
               {t('common.cancel')}
             </button>
           )}
-        </span>
+        </div>
       )}
-    </div>
+    </li>
   )
 }
 
 export default function ReviewInvoice() {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
+  const format = useFormat()
   const { id } = useParams()
   const [invoice, setInvoice] = useState<InvoiceDetail | null>(null)
   const [items, setItems] = useState<Item[]>([])
@@ -280,8 +308,7 @@ export default function ReviewInvoice() {
   // loading the invoice or the item list failed (shown at the top)
   const [loadError, setLoadError] = useState<ApiError | null>(null)
   const [posted, setPosted] = useState<PostResult | null>(null)
-  const language = i18n.resolvedLanguage ?? 'en'
-  const isOwner = useIsOwner() // only the owner confirms lines and posts
+  const isOwner = useIsOwner() // only the owner confirms lines and adds to stock
 
   const reload = useCallback(() => {
     api
@@ -302,32 +329,45 @@ export default function ReviewInvoice() {
   }, [reload])
 
   if (invoice === null) {
-    return loadError ? (
-      <ErrorMessage error={loadError} />
-    ) : (
-      <p>{t('common.loading')}</p>
+    return (
+      <div className="page">
+        {loadError ? (
+          <ErrorMessage error={loadError} />
+        ) : (
+          <p className="muted">{t('common.loading')}</p>
+        )}
+      </div>
     )
   }
 
-  const unconfirmed = invoice.lines.filter((l) => l.item_id === null).length
-
   if (posted) {
     return (
-      <section>
+      <div className="page">
         <h1>{invoice.supplier_name}</h1>
-        <p className="success-box">{t('review.posted')}</p>
-        <ul>
+        <div className="notice notice-ok">
+          <p>{t('review.posted')}</p>
+        </div>
+        <ul className="list">
           {posted.balances.map((b) => (
             <li key={b.item_id}>
-              {b.name}: {formatQty(b.qty, b.base_unit)} ·{' '}
-              {formatCents(b.cost_cents, language)}
+              <div className="list-row">
+                <span className="list-row-main">
+                  <span className="list-row-title">{b.name}</span>
+                </span>
+                <span className="list-row-end">
+                  <span className="num">{format.qty(b.qty, b.base_unit)}</span>
+                  <span className="num list-row-meta">{format.money(b.cost_cents)}</span>
+                </span>
+              </div>
             </li>
           ))}
         </ul>
-        <p>
-          <Link to="/review">{t('review.backToQueue')}</Link>
+        <p className="after-list">
+          <Link className="btn" to="/review">
+            {t('review.backToQueue')}
+          </Link>
         </p>
-      </section>
+      </div>
     )
   }
 
@@ -340,47 +380,82 @@ export default function ReviewInvoice() {
     }
   }
 
+  const pending = invoice.status === 'pending_review'
+  const unconfirmed = invoice.lines.filter((l) => l.item_id === null).length
+  // lines still to confirm first; otherwise the printed order
+  const lines = [...invoice.lines].sort(
+    (a, b) => Number(a.item_id !== null) - Number(b.item_id !== null),
+  )
+
   return (
-    <section>
-      <h1>
-        {invoice.supplier_name}
-        {invoice.invoice_number ? ` · ${invoice.invoice_number}` : ''}
-      </h1>
+    <div className="page">
+      <div className="page-header">
+        <h1>{invoice.supplier_name}</h1>
+        <span className="page-header-figure num">{format.money(invoice.total_cents)}</span>
+      </div>
       <p className="muted">
-        {t('review.date')}: {invoice.invoice_date} · {t('review.total')}:{' '}
-        {formatCents(invoice.total_cents, language)}
+        {format.date(invoice.invoice_date)}
+        {invoice.invoice_number ? ` · ${invoice.invoice_number}` : ''}
       </p>
+      {!pending && (
+        <p>
+          <span className="badge badge-ok">
+            {invoice.posted_at
+              ? t('review.addedOn', { date: format.dateTime(invoice.posted_at) })
+              : t('review.added')}
+          </span>
+        </p>
+      )}
 
       <ErrorMessage error={loadError} />
 
-      {invoice.lines.map((line) => (
-        <LineCard
-          key={line.id}
-          line={line}
-          items={items}
-          canEdit={isOwner && invoice.status === 'pending_review'}
-          onConfirmed={reload}
-          onItemCreated={(item) =>
-            setItems((old) =>
-              [...old, item].sort((a, b) => a.name.localeCompare(b.name)),
-            )
-          }
-        />
-      ))}
-
-      <p>
-        {unconfirmed > 0
-          ? t('review.linesToConfirm', { count: unconfirmed })
-          : t('review.allConfirmed')}
-      </p>
-      <ErrorMessage error={error} />
-      {isOwner ? (
-        <button type="button" disabled={unconfirmed > 0} onClick={post}>
-          {t('review.post')}
-        </button>
-      ) : (
-        <p className="muted">{t('review.ownerPosts')}</p>
+      {invoice.photo_id !== null && (
+        <details className="photo-toggle">
+          <summary>{t('review.showPhoto')}</summary>
+          <img
+            src={`/api/invoice-photos/${invoice.photo_id}/image`}
+            alt={t('review.photoAlt')}
+          />
+        </details>
       )}
-    </section>
+
+      <h2>
+        {!pending
+          ? t('newInvoice.lines')
+          : unconfirmed > 0
+            ? t('review.linesToConfirm', { count: unconfirmed })
+            : t('review.allConfirmed')}
+      </h2>
+      <ol className="line-cards">
+        {lines.map((line) => (
+          <LineCard
+            key={line.id}
+            line={line}
+            items={items}
+            canEdit={isOwner && pending}
+            onConfirmed={reload}
+            onItemCreated={(item) =>
+              setItems((old) =>
+                [...old, item].sort((a, b) => a.name.localeCompare(b.name)),
+              )
+            }
+          />
+        ))}
+      </ol>
+
+      {pending && !isOwner && (
+        <div className="notice notice-warn">
+          <p>{t('review.ownerPosts')}</p>
+        </div>
+      )}
+      {pending && isOwner && unconfirmed === 0 && (
+        <div className="action-bar">
+          <ErrorMessage error={error} />
+          <button type="button" className="btn btn-primary btn-large btn-block" onClick={post}>
+            {t('review.post')}
+          </button>
+        </div>
+      )}
+    </div>
   )
 }

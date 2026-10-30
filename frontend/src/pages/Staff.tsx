@@ -72,88 +72,113 @@ export default function Staff() {
   }
 
   return (
-    <section>
+    <div className="page">
       <h1>{t('staff.title')}</h1>
       <ErrorMessage error={error} />
-      {done && <p className="success-box">{t(done)}</p>}
+      {done && (
+        <div className="notice notice-ok">
+          <p>{t(done)}</p>
+        </div>
+      )}
 
-      {users === null && !error && <p>{t('common.loading')}</p>}
-      <ul className="staff-list">
-        {users?.map((u) => (
-          <li key={u.id}>
-            <span>
-              <strong>{u.email}</strong> · {t(`role.${u.role}`)}{' '}
-              {!u.active && <span className="badge pending">{t('staff.inactive')}</span>}
-            </span>
-            {u.id !== me?.id && (
-              <span className="row">
-                <button
-                  type="button"
-                  onClick={() =>
-                    attempt(
-                      () => api.put(`/api/users/${u.id}/active`, { active: !u.active }),
-                      u.active ? 'staff.deactivated' : 'staff.reactivated',
-                    )
-                  }
-                >
-                  {u.active ? t('staff.deactivate') : t('staff.reactivate')}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setResetFor(u.id)
-                    setNewPassword('')
-                  }}
-                >
-                  {t('staff.resetPassword')}
-                </button>
-              </span>
-            )}
-            {resetFor === u.id && (
-              <form className="row" onSubmit={(e) => resetPassword(e, u.id)}>
-                <input
-                  type="password"
-                  autoComplete="new-password"
-                  aria-label={t('staff.newPassword')}
-                  placeholder={t('staff.newPassword')}
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                />
-                <button type="submit">{t('staff.save')}</button>
-                <button type="button" onClick={() => setResetFor(null)}>
-                  {t('common.cancel')}
-                </button>
-              </form>
-            )}
-          </li>
-        ))}
-      </ul>
+      {users === null && !error && <p className="muted">{t('common.loading')}</p>}
+      {users && (
+        <ul className="list">
+          {users.map((u) => (
+            <li key={u.id}>
+              <div className="list-row">
+                <span className="list-row-main">
+                  <span className="list-row-title">{u.email}</span>
+                  <span className="list-row-meta">{t(`role.${u.role}`)}</span>
+                </span>
+                {!u.active && <span className="badge">{t('staff.inactive')}</span>}
+              </div>
+              {u.id !== me?.id && (
+                <div className="cluster list-row-extra">
+                  <button
+                    type="button"
+                    className={u.active ? 'btn btn-danger' : 'btn'}
+                    onClick={() =>
+                      attempt(
+                        () => api.put(`/api/users/${u.id}/active`, { active: !u.active }),
+                        u.active ? 'staff.deactivated' : 'staff.reactivated',
+                      )
+                    }
+                  >
+                    {u.active ? t('staff.deactivate') : t('staff.reactivate')}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-quiet"
+                    onClick={() => {
+                      setResetFor(u.id)
+                      setNewPassword('')
+                    }}
+                  >
+                    {t('staff.resetPassword')}
+                  </button>
+                </div>
+              )}
+              {resetFor === u.id && (
+                <form className="list-row-extra" onSubmit={(e) => resetPassword(e, u.id)}>
+                  <div className="field">
+                    <label htmlFor={`reset-${u.id}`}>{t('staff.newPassword')}</label>
+                    <input
+                      id={`reset-${u.id}`}
+                      type="password"
+                      autoComplete="new-password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                    />
+                  </div>
+                  <div className="cluster">
+                    <button type="submit" className="btn btn-primary">
+                      {t('staff.save')}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-quiet"
+                      onClick={() => setResetFor(null)}
+                    >
+                      {t('common.cancel')}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
 
       <h2>{t('staff.addTitle')}</h2>
       <form onSubmit={addStaff}>
-        <label>
-          {t('login.email')}
+        <div className="field">
+          <label htmlFor="staff-email">{t('login.email')}</label>
           <input
+            id="staff-email"
             type="email"
             autoComplete="off"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-        </label>
-        <label>
-          {t('staff.initialPassword')}
+        </div>
+        <div className="field">
+          <label htmlFor="staff-password">{t('staff.initialPassword')}</label>
           <input
+            id="staff-password"
             type="password"
             autoComplete="new-password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-        </label>
-        <p className="muted">{t('staff.passwordHint', { min: MIN_PASSWORD_LENGTH })}</p>
-        <button type="submit">{t('staff.add')}</button>
+          <p className="field-hint">{t('staff.passwordHint', { min: MIN_PASSWORD_LENGTH })}</p>
+        </div>
+        <button type="submit" className="btn btn-primary">
+          {t('staff.add')}
+        </button>
       </form>
-    </section>
+    </div>
   )
 }
