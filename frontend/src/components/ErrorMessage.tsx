@@ -14,7 +14,15 @@ const CENTS_KEYS: Record<string, string> = {
 // context keys holding a unit code ('g' / 'ml' / 'each') to translate
 const UNIT_KEYS = ['textUnit', 'itemUnit']
 
-export default function ErrorMessage({ error }: { error: ApiError | null }) {
+export default function ErrorMessage({
+  error,
+  intro,
+  tone = 'error',
+}: {
+  error: ApiError | null
+  intro?: string // a sentence above the messages
+  tone?: 'error' | 'warn' // warn: things to check, not failures
+}) {
   const { t, i18n } = useTranslation()
   if (!error) return null
 
@@ -24,7 +32,8 @@ export default function ErrorMessage({ error }: { error: ApiError | null }) {
     : [{ code: error.code, context: error.context }]
 
   return (
-    <div className="notice notice-error" role="alert">
+    <div className={`notice notice-${tone}`} role="alert">
+      {intro && <p className="notice-intro">{intro}</p>}
       {entries.map((entry, index) => {
         const vars: Record<string, unknown> = { ...entry.context }
         for (const [centsKey, name] of Object.entries(CENTS_KEYS)) {
@@ -49,10 +58,9 @@ export default function ErrorMessage({ error }: { error: ApiError | null }) {
               ? t('wait.minutes', { n: minutes })
               : t('wait.hours', { n: Math.ceil(minutes / 60) })
         }
-        const key =
-          entry.code === 'invoiceError.badNumber' && vars.line != null
-            ? 'invoiceError.badNumberLine'
-            : entry.code
+        // a message about one line has its own wording ("Line 2: ...")
+        const lineKey = `${entry.code}Line`
+        const key = vars.line != null && i18n.exists(lineKey) ? lineKey : entry.code
         return <p key={index}>{t(key, vars as Record<string, string>)}</p>
       })}
     </div>

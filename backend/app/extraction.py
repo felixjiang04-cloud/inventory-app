@@ -231,7 +231,12 @@ def draft_from_answer(conn: psycopg.Connection, answer: dict) -> Draft:
     """The full draft: parsed fields, problems, and a supplier suggestion."""
     draft = build_draft(answer)
     draft.supplier_id = suggest_supplier(conn, draft.supplier_name_read)
-    if draft.supplier_id is None:
+    if not draft.supplier_name_read:
+        # nothing printed (or read) at all: say so, rather than 'supplier ""'
+        draft.problems.append(
+            ValidationError("extractionError.missing", {"field": "supplier", "read": ""})
+        )
+    elif draft.supplier_id is None:
         draft.problems.append(
             ValidationError(
                 "extractionError.unknownSupplier", {"name": draft.supplier_name_read}

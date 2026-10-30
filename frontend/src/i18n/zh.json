@@ -28,7 +28,10 @@
     "other_tax": "其他税",
     "total": "总计",
     "quantity": "数量",
-    "line_total": "行金额"
+    "line_total": "行金额",
+    "invoice_date": "日期",
+    "raw_text": "品名",
+    "supplier": "供应商"
   },
   "wait": {
     "minutes": "{{n}} 分钟",
@@ -209,5 +212,40 @@
     "title": "已入库发票",
     "search": "按供应商或发票号搜索",
     "noMatch": "没有与“{{search}}”匹配的发票。"
+  },
+  "photo": {
+    "title": "添加发票",
+    "hint": "请将发票平放，光线充足，整页都在画面内。",
+    "choose": "拍照或选择照片",
+    "reading": "正在识别发票……请稍候。",
+    "checkTitle": "核对识别结果",
+    "checkIntro": "表格已根据照片填写。保存前请逐行与照片核对。",
+    "problemsIntro": "请对照照片检查以下内容：",
+    "waiting": "照片已保存，但暂时无法识别。请稍后重试，或手动录入发票。",
+    "failed": "这张照片无法识别。请重试，或手动录入发票。",
+    "tryAgain": "重试",
+    "typeByHand": "手动录入",
+    "pending": "尚未保存的照片",
+    "status": {
+      "waiting": "等待识别",
+      "read": "已识别，未保存",
+      "failed": "无法识别"
+    },
+    "openInvoice": "打开发票"
+  },
+  "photoError": {
+    "tooLarge": "照片太大（最大 {{maxMb}} MB）。",
+    "notAnImage": "无法打开此文件。请使用 JPEG 或 PNG 格式的照片。",
+    "notFound": "找不到该照片。",
+    "alreadyUsed": "这张照片已保存为发票。",
+    "fileMissing": "服务器上找不到该照片文件。"
+  },
+  "extractionError": {
+    "unreadable": "无法识别{{field}}（识别为“{{read}}”）。",
+    "unreadableLine": "第 {{line}} 行：无法识别{{field}}（识别为“{{read}}”）。",
+    "missing": "照片上没有找到{{field}}。",
+    "missingLine": "第 {{line}} 行：照片上没有找到{{field}}。",
+    "dateUnclear": "日期“{{read}}”有多种理解方式，请手动填写。",
+    "unknownSupplier": "供应商“{{name}}”还不在列表中。"
   }
 }

@@ -173,3 +173,18 @@ def test_supplier_is_suggested_by_fuzzy_name(conn) -> None:
     assert suggest_supplier(conn, "MARCHÉ CENTRAL INC.") == marche
     assert suggest_supplier(conn, "Poissonnerie du Port") is None
     assert suggest_supplier(conn, "") is None
+
+
+def test_supplier_problems_say_what_happened(conn) -> None:
+    from app.extraction import draft_from_answer
+
+    unknown = draft_from_answer(conn, answer(supplier_name="Poissonnerie du Port"))
+    assert ("extractionError.unknownSupplier", {"name": "Poissonnerie du Port"}) in [
+        (p.code, p.context) for p in unknown.problems
+    ]
+
+    unread = draft_from_answer(conn, answer(supplier_name=""))
+    assert ("extractionError.missing", {"field": "supplier", "read": ""}) in [
+        (p.code, p.context) for p in unread.problems
+    ]
+    assert "extractionError.unknownSupplier" not in [p.code for p in unread.problems]

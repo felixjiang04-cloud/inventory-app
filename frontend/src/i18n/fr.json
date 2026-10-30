@@ -28,7 +28,10 @@
     "other_tax": "autre taxe",
     "total": "total",
     "quantity": "quantité",
-    "line_total": "total de ligne"
+    "line_total": "total de ligne",
+    "invoice_date": "date",
+    "raw_text": "description",
+    "supplier": "fournisseur"
   },
   "wait": {
     "minutes": "{{n}} min",
@@ -209,5 +212,40 @@
     "title": "Factures ajoutées au stock",
     "search": "Chercher par fournisseur ou numéro de facture",
     "noMatch": "Aucune facture ne correspond à « {{search}} »."
+  },
+  "photo": {
+    "title": "Ajouter une facture",
+    "hint": "Posez la facture à plat, bien éclairée, la page entière dans l'image.",
+    "choose": "Prendre ou choisir une photo",
+    "reading": "Lecture de la facture… quelques secondes.",
+    "checkTitle": "Vérifiez la lecture",
+    "checkIntro": "Le formulaire a été rempli à partir de la photo. Comparez chaque ligne avec la photo avant d'enregistrer.",
+    "problemsIntro": "Vérifiez ceci sur la photo :",
+    "waiting": "Photo enregistrée, mais elle ne peut pas être lue pour l'instant. Réessayez dans un moment, ou saisissez la facture à la main.",
+    "failed": "Cette photo n'a pas pu être lue. Réessayez, ou saisissez la facture à la main.",
+    "tryAgain": "Réessayer",
+    "typeByHand": "La saisir à la main",
+    "pending": "Photos pas encore enregistrées",
+    "status": {
+      "waiting": "En attente de lecture",
+      "read": "Lue, pas enregistrée",
+      "failed": "Illisible"
+    },
+    "openInvoice": "Ouvrir la facture"
+  },
+  "photoError": {
+    "tooLarge": "Cette photo est trop lourde (maximum {{maxMb}} Mo).",
+    "notAnImage": "Ce fichier n'est pas une photo lisible. Utilisez une photo JPEG ou PNG.",
+    "notFound": "Photo introuvable.",
+    "alreadyUsed": "Cette photo est déjà enregistrée comme facture.",
+    "fileMissing": "Le fichier de la photo est introuvable sur le serveur."
+  },
+  "extractionError": {
+    "unreadable": "Lecture impossible : {{field}} (lu « {{read}} »).",
+    "unreadableLine": "Ligne {{line}} : lecture impossible : {{field}} (lu « {{read}} »).",
+    "missing": "Introuvable sur la photo : {{field}}.",
+    "missingLine": "Ligne {{line}} : introuvable sur la photo : {{field}}.",
+    "dateUnclear": "La date « {{read}} » peut se lire de plusieurs façons. Saisissez-la vous-même.",
+    "unknownSupplier": "Le fournisseur « {{name}} » n'est pas encore dans votre liste."
   }
 }

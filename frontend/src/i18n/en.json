@@ -28,7 +28,10 @@
     "other_tax": "other tax",
     "total": "total",
     "quantity": "quantity",
-    "line_total": "line total"
+    "line_total": "line total",
+    "invoice_date": "date",
+    "raw_text": "description",
+    "supplier": "supplier"
   },
   "wait": {
     "minutes": "{{n}} min",
@@ -209,5 +212,40 @@
     "title": "Invoices added to stock",
     "search": "Search by supplier or invoice number",
     "noMatch": "No invoice matches “{{search}}”."
+  },
+  "photo": {
+    "title": "Add an invoice",
+    "hint": "Lay the invoice flat in good light, with the whole page in the picture.",
+    "choose": "Take or choose a photo",
+    "reading": "Reading the invoice… this takes a few seconds.",
+    "checkTitle": "Check what was read",
+    "checkIntro": "The form was filled in from the photo. Compare each line with the photo before saving.",
+    "problemsIntro": "Check these against the photo:",
+    "waiting": "Photo saved, but it can't be read right now. Try again in a moment, or type the invoice in.",
+    "failed": "This photo couldn't be read. Try again, or type the invoice in.",
+    "tryAgain": "Try again",
+    "typeByHand": "Type it in",
+    "pending": "Photos not saved yet",
+    "status": {
+      "waiting": "Waiting to be read",
+      "read": "Read, not saved",
+      "failed": "Couldn't be read"
+    },
+    "openInvoice": "Open the invoice"
+  },
+  "photoError": {
+    "tooLarge": "This photo is too large (maximum {{maxMb}} MB).",
+    "notAnImage": "This file isn't a photo the app can open. Use a JPEG or PNG photo.",
+    "notFound": "Photo not found.",
+    "alreadyUsed": "This photo is already saved as an invoice.",
+    "fileMissing": "The photo file is missing on the server."
+  },
+  "extractionError": {
+    "unreadable": "Couldn't read the {{field}} (read as “{{read}}”).",
+    "unreadableLine": "Line {{line}}: couldn't read the {{field}} (read as “{{read}}”).",
+    "missing": "The {{field}} wasn't found on the photo.",
+    "missingLine": "Line {{line}}: the {{field}} wasn't found on the photo.",
+    "dateUnclear": "The date “{{read}}” could mean more than one day. Enter it yourself.",
+    "unknownSupplier": "The supplier “{{name}}” isn't in your list yet."
   }
 }

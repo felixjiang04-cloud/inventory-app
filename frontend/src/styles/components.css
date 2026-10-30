@@ -441,3 +441,60 @@ a.list-row:hover {
   font-size: var(--text-lg);
   font-weight: var(--weight-strong);
 }
+
+/* --- Adding an invoice from a photo ------------------------------------------------ */
+
+/* a file input disguised as a big button; focus shows on the button */
+.file-button {
+  cursor: pointer;
+}
+
+.file-button:focus-within {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* phones: the photo above the form; computers: side by side */
+.photo-layout-photo {
+  width: 100%;
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-4) 0;
+}
+
+.invoice-photo img {
+  width: 100%;
+  max-height: 45vh;
+  object-fit: contain;
+  background: var(--color-sunken);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+@media (min-width: 900px) {
+  .photo-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .photo-layout-photo {
+    position: sticky;
+    top: 0;
+    max-width: none;
+    margin: 0;
+    padding: var(--space-5) var(--space-4);
+  }
+
+  .invoice-photo img {
+    max-height: calc(100vh - 3rem);
+  }
+
+  .photo-layout .page {
+    margin: 0;
+  }
+}
+
+.notice-intro {
+  font-weight: var(--weight-strong);
+}

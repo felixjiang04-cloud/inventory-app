@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import { api, ApiError, toApiError } from '../api'
-import type { Supplier } from '../api'
+import type { InvoiceDraft, Supplier } from '../api'
 import { useIsOwner } from '../auth'
 import ErrorMessage from '../components/ErrorMessage'
 
@@ -15,21 +15,58 @@ interface LineDraft {
 
 const emptyLine = (): LineDraft => ({ raw_text: '', quantity: '1', line_total: '' })
 
-export default function NewInvoice() {
+// The fields the checks flagged in an AI draft, as "total" or
+// "line:2:quantity", so the form can outline them for checking.
+function flaggedFields(draft: InvoiceDraft | null | undefined): Set<string> {
+  const keys = new Set<string>()
+  for (const problem of draft?.problems ?? []) {
+    const { field, line } = problem.context
+    if (problem.code === 'invoiceError.lineTotalsMismatch') keys.add('subtotal')
+    else if (problem.code === 'invoiceError.totalMismatch') keys.add('total')
+    else if (problem.code === 'extractionError.unknownSupplier') keys.add('supplier')
+    else if (typeof field === 'string') {
+      keys.add(typeof line === 'number' ? `line:${line}:${field}` : field)
+    }
+  }
+  return keys
+}
+
+// Typing an invoice, or checking one the AI read from a photo: with a
+// `draft` the form starts filled in and points at what to check; with a
+// `photoId` the saved invoice is linked to its photo.
+export default function NewInvoice({
+  draft,
+  photoId,
+}: {
+  draft?: InvoiceDraft | null
+  photoId?: number
+}) {
   const { t } = useTranslation()
   const isOwner = useIsOwner() // only the owner may add suppliers
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
-  const [supplierId, setSupplierId] = useState('')
+  const [supplierId, setSupplierId] = useState(
+    draft?.supplier_id ? String(draft.supplier_id) : '',
+  )
   const [creatingSupplier, setCreatingSupplier] = useState(false)
   const [newSupplierName, setNewSupplierName] = useState('')
-  const [invoiceDate, setInvoiceDate] = useState('')
-  const [invoiceNumber, setInvoiceNumber] = useState('')
-  const [lines, setLines] = useState<LineDraft[]>([emptyLine()])
-  const [subtotal, setSubtotal] = useState('')
-  const [gst, setGst] = useState('0')
-  const [qst, setQst] = useState('0')
-  const [otherTax, setOtherTax] = useState('0')
-  const [total, setTotal] = useState('')
+  const [invoiceDate, setInvoiceDate] = useState(draft?.invoice_date ?? '')
+  const [invoiceNumber, setInvoiceNumber] = useState(draft?.invoice_number ?? '')
+  const [lines, setLines] = useState<LineDraft[]>(
+    draft?.lines.length ? draft.lines : [emptyLine()],
+  )
+  const [subtotal, setSubtotal] = useState(draft?.subtotal ?? '')
+  const [gst, setGst] = useState(draft?.gst ?? '0')
+  const [qst, setQst] = useState(draft?.qst ?? '0')
+  const [otherTax, setOtherTax] = useState(draft?.other_tax ?? '0')
+  const [total, setTotal] = useState(draft?.total ?? '')
+
+  const flagged = flaggedFields(draft)
+  // CSS classes for an input, plus "needs-check" when the AI flagged it
+  const check = (key: string, base = '') =>
+    [base, flagged.has(key) ? 'needs-check' : ''].filter(Boolean).join(' ') || undefined
+  const problems = draft?.problems.length
+    ? new ApiError({ detail: { errors: draft.problems } }, 0)
+    : null
   const [error, setError] = useState<ApiError | null>(null)
   const [savedId, setSavedId] = useState<number | null>(null)
   const [busy, setBusy] = useState(false)
@@ -75,6 +112,7 @@ export default function NewInvoice() {
         qst,
         other_tax: otherTax,
         total,
+        photo_id: photoId ?? null,
       })
       setSavedId(result.id)
     } catch (e) {
@@ -100,12 +138,15 @@ export default function NewInvoice() {
 
   return (
     <div className="page">
-      <h1>{t('newInvoice.title')}</h1>
+      <h1>{draft ? t('photo.checkTitle') : t('newInvoice.title')}</h1>
+      {draft && <p className="muted">{t('photo.checkIntro')}</p>}
+      <ErrorMessage error={problems} tone="warn" intro={t('photo.problemsIntro')} />
       <form onSubmit={submit}>
         <div className="field">
           <label htmlFor="invoice-supplier">{t('newInvoice.supplier')}</label>
           <select
             id="invoice-supplier"
+            className={check('supplier')}
             required
             value={supplierId}
             onChange={(e) => setSupplierId(e.target.value)}
@@ -152,6 +193,7 @@ export default function NewInvoice() {
             <label htmlFor="invoice-date">{t('newInvoice.invoiceDate')}</label>
             <input
               id="invoice-date"
+              className={check('invoice_date')}
               type="date"
               required
               value={invoiceDate}
@@ -190,6 +232,7 @@ export default function NewInvoice() {
                 <label htmlFor={`line-${index}-text`}>{t('newInvoice.rawText')}</label>
                 <input
                   id={`line-${index}-text`}
+                  className={check(`line:${index + 1}:raw_text`)}
                   required
                   value={line.raw_text}
                   onChange={(e) => setLine(index, { raw_text: e.target.value })}
@@ -200,7 +243,7 @@ export default function NewInvoice() {
                   <label htmlFor={`line-${index}-qty`}>{t('newInvoice.quantity')}</label>
                   <input
                     id={`line-${index}-qty`}
-                    className="num"
+                    className={check(`line:${index + 1}:quantity`, 'num')}
                     inputMode="decimal"
                     required
                     value={line.quantity}
@@ -211,7 +254,7 @@ export default function NewInvoice() {
                   <label htmlFor={`line-${index}-total`}>{t('newInvoice.lineTotal')}</label>
                   <input
                     id={`line-${index}-total`}
-                    className="num"
+                    className={check(`line:${index + 1}:line_total`, 'num')}
                     inputMode="decimal"
                     required
                     value={line.line_total}
@@ -236,7 +279,7 @@ export default function NewInvoice() {
             <label htmlFor="invoice-subtotal">{t('newInvoice.subtotal')}</label>
             <input
               id="invoice-subtotal"
-              className="num"
+              className={check('subtotal', 'num')}
               inputMode="decimal"
               required
               value={subtotal}
@@ -247,7 +290,7 @@ export default function NewInvoice() {
             <label htmlFor="invoice-gst">{t('newInvoice.gst')}</label>
             <input
               id="invoice-gst"
-              className="num"
+              className={check('gst', 'num')}
               inputMode="decimal"
               value={gst}
               onChange={(e) => setGst(e.target.value)}
@@ -257,7 +300,7 @@ export default function NewInvoice() {
             <label htmlFor="invoice-qst">{t('newInvoice.qst')}</label>
             <input
               id="invoice-qst"
-              className="num"
+              className={check('qst', 'num')}
               inputMode="decimal"
               value={qst}
               onChange={(e) => setQst(e.target.value)}
@@ -267,7 +310,7 @@ export default function NewInvoice() {
             <label htmlFor="invoice-other-tax">{t('newInvoice.otherTax')}</label>
             <input
               id="invoice-other-tax"
-              className="num"
+              className={check('other_tax', 'num')}
               inputMode="decimal"
               value={otherTax}
               onChange={(e) => setOtherTax(e.target.value)}
@@ -278,7 +321,7 @@ export default function NewInvoice() {
           <label htmlFor="invoice-total">{t('newInvoice.total')}</label>
           <input
             id="invoice-total"
-            className="num"
+            className={check('total', 'num')}
             inputMode="decimal"
             required
             value={total}

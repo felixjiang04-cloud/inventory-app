@@ -10,6 +10,7 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import More from './pages/More'
 import NewInvoice from './pages/NewInvoice'
+import PhotoInvoice from './pages/PhotoInvoice'
 import Posted from './pages/Posted'
 import ReviewInvoice from './pages/ReviewInvoice'
 import ReviewQueue from './pages/ReviewQueue'
@@ -97,7 +98,8 @@ function App() {
       <main className="content">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/add" element={<NewInvoice />} />
+          <Route path="/add" element={<PhotoInvoice />} />
+          <Route path="/add/:id" element={<PhotoInvoice />} />
           <Route path="/invoices/new" element={<NewInvoice />} />
           <Route path="/review" element={<ReviewQueue />} />
           <Route path="/review/:id" element={<ReviewInvoice />} />
