@@ -253,3 +253,72 @@ def test_update_choice_changes_future_invoices(client, conn) -> None:
 def test_reconfirming_identical_values_needs_no_choice(client) -> None:
     tomatoes, line_id = tomato_spelling_saved_as_5kg(client)
     assert confirm(client, line_id, tomatoes, 5000).status_code == 200
+
+
+# --- stock levels and recent invoices -----------------------------------------
+
+
+def post_tomato_and_oil_invoice(client) -> tuple[int, int]:
+    """Enter, confirm and post the standard two-line invoice (dated
+    2026-07-18): 2 x 5 kg tomatoes for 30.00 $, 1 x 3 L oil for 25.00 $."""
+    supplier = make_supplier(client)
+    tomatoes = make_item(client, "Tomates Roma")
+    oil = make_item(client, "Huile d'olive", base_unit="ml")
+    invoice_id = make_invoice(client, supplier).json()["id"]
+    line_tom, line_oil = client.get(f"/api/invoices/{invoice_id}").json()["lines"]
+    confirm(client, line_tom["id"], tomatoes, 5000)
+    confirm(client, line_oil["id"], oil, 3000)
+    assert client.post(f"/api/invoices/{invoice_id}/post").status_code == 200
+    return tomatoes, oil
+
+
+def test_stock_lists_quantity_spend_and_last_delivery(client) -> None:
+    tomatoes, oil = post_tomato_and_oil_invoice(client)
+    eggs = make_item(client, "Oeufs", base_unit="each")  # never delivered
+
+    stock = {row["id"]: row for row in client.get("/api/stock").json()}
+
+    assert stock[tomatoes] | {"id": None} == {
+        "id": None,
+        "name": "Tomates Roma",
+        "base_unit": "g",
+        "qty": 10000,
+        "spent_cents": 3000,
+        "last_delivery": "2026-07-18",
+    }
+    assert stock[oil]["qty"] == 3000
+    assert stock[oil]["spent_cents"] == 2500
+    assert (stock[eggs]["qty"], stock[eggs]["spent_cents"]) == (0, 0)
+    assert stock[eggs]["last_delivery"] is None
+
+
+def test_stock_agrees_with_the_ledger_and_skips_inactive_items(client, conn) -> None:
+    from app.ledger import item_balance
+
+    tomatoes, oil = post_tomato_and_oil_invoice(client)
+    conn.execute("UPDATE items SET active = false WHERE id = %s", (oil,))
+
+    rows = client.get("/api/stock").json()
+
+    assert oil not in [row["id"] for row in rows]
+    (tomato_row,) = [row for row in rows if row["id"] == tomatoes]
+    balance = item_balance(conn, tomatoes)
+    assert (tomato_row["qty"], tomato_row["spent_cents"]) == (
+        balance.qty,
+        balance.cost_cents,
+    )
+
+
+def test_staff_can_see_stock(staff_client) -> None:
+    assert staff_client.get("/api/stock").status_code == 200
+
+
+def test_invoice_list_can_be_limited(client) -> None:
+    supplier = make_supplier(client)
+    for number in ("F-1", "F-2", "F-3"):
+        make_invoice(client, supplier, invoice_number=number)
+
+    limited = client.get("/api/invoices", params={"limit": 2}).json()
+
+    assert len(limited) == 2
+    assert client.get("/api/invoices", params={"limit": 0}).status_code == 422

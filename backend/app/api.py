@@ -10,7 +10,7 @@ from fractions import Fraction
 from typing import Literal
 
 import psycopg
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from psycopg import errors
 from pydantic import BaseModel, Field
 
@@ -264,12 +264,16 @@ def create_invoice(
 
 @router.get("/invoices")
 def list_invoices(
-    status: str = "pending_review", conn: psycopg.Connection = Depends(get_db)
+    status: str = "pending_review",
+    limit: int | None = Query(default=None, ge=1, le=200),  # None = all
+    conn: psycopg.Connection = Depends(get_db),
 ):
+    # Most recently added to stock first (posted invoices), then by the
+    # printed date (pending ones have no posted_at yet).
     return conn.execute(
         """
         SELECT i.id, s.name AS supplier_name, i.invoice_number,
-               i.invoice_date, i.total_cents, i.status,
+               i.invoice_date, i.total_cents, i.status, i.posted_at,
                COUNT(l.id) AS line_count,
                COUNT(l.id) FILTER (WHERE l.item_id IS NULL) AS unconfirmed_lines
         FROM invoices i
@@ -277,9 +281,36 @@ def list_invoices(
         LEFT JOIN invoice_lines l ON l.invoice_id = i.id
         WHERE i.status = %s
         GROUP BY i.id, s.name
-        ORDER BY i.invoice_date DESC, i.id DESC
+        ORDER BY i.posted_at DESC NULLS LAST, i.invoice_date DESC, i.id DESC
+        LIMIT %s
         """,
-        (status,),
+        (status, limit),
+    ).fetchall()
+
+
+# ---------------------------------------------------------------------------
+# Stock
+# ---------------------------------------------------------------------------
+
+
+@router.get("/stock")
+def stock_levels(conn: psycopg.Connection = Depends(get_db)):
+    """Every active item with its quantity on hand and total spent (the same
+    sums as ledger.item_balance, for all items in one query) and the date
+    of its last delivery. Read straight from the ledger."""
+    return conn.execute(
+        """
+        SELECT it.id, it.name, it.base_unit,
+               COALESCE(SUM(le.qty_delta), 0)::bigint AS qty,
+               COALESCE(SUM(le.cost_delta_cents), 0)::bigint AS spent_cents,
+               MAX(le.occurred_on) FILTER (WHERE le.entry_type = 'purchase')
+                   AS last_delivery
+        FROM items it
+        LEFT JOIN ledger_entries le ON le.item_id = it.id
+        WHERE it.active
+        GROUP BY it.id
+        ORDER BY it.name
+        """
     ).fetchall()
 
 
