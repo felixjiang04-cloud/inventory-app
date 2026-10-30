@@ -10,7 +10,11 @@
     "home": "Home",
     "newInvoice": "New invoice",
     "review": "Review",
-    "staff": "Staff"
+    "staff": "Staff",
+    "main": "Main menu",
+    "add": "Add",
+    "check": "Check",
+    "more": "More"
   },
   "common": {
     "loading": "Loading…",
@@ -163,5 +167,12 @@
     "deactivated": "Account deactivated. That person has been logged out everywhere.",
     "reactivated": "Account reactivated.",
     "passwordReset": "Password changed. That person has been logged out everywhere."
+  },
+  "more": {
+    "title": "More",
+    "typeInvoice": "Type an invoice",
+    "typeInvoiceHint": "When there's no photo, or the photo can't be read",
+    "staffHint": "Add staff, reset passwords, deactivate accounts",
+    "account": "Account"
   }
 }

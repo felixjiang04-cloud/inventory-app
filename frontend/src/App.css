@@ -1,41 +1,4 @@
-header {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  flex-wrap: wrap;
-  padding: 0.75rem 1rem;
-  background: #fff;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.brand {
-  font-weight: bold;
-}
-
-header nav {
-  display: flex;
-  gap: 0.75rem;
-}
-
-header nav a {
-  text-decoration: none;
-  color: #1a4d8f;
-}
-
-header nav a.active {
-  font-weight: bold;
-  text-decoration: underline;
-}
-
-header .lang {
-  margin-left: auto;
-}
-
-main {
-  max-width: 44rem;
-  margin: 1.5rem auto 4rem;
-  padding: 0 1rem;
-}
+/* Old page styles, removed once every screen uses src/styles (step 4). */
 
 .home {
   text-align: center;
@@ -57,13 +20,6 @@ form label,
 section label {
   display: block;
   margin: 0.8rem 0 0.3rem;
-}
-
-input,
-select {
-  padding: 0.35rem 0.5rem;
-  font-size: 0.95rem;
-  max-width: 100%;
 }
 
 .row {

@@ -1,12 +1,14 @@
 import { lazy, Suspense, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom'
+import { Link, Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom'
 
 import { useAuth } from './auth'
 import ErrorMessage from './components/ErrorMessage'
-import { languages } from './i18n'
+import Icon from './components/Icon'
+import LanguageSwitch from './components/LanguageSwitch'
 import Home from './pages/Home'
 import Login from './pages/Login'
+import More from './pages/More'
 import NewInvoice from './pages/NewInvoice'
 import ReviewInvoice from './pages/ReviewInvoice'
 import ReviewQueue from './pages/ReviewQueue'
@@ -17,9 +19,19 @@ import './App.css'
 // production build drops it entirely.
 const StyleGuide = import.meta.env.DEV ? lazy(() => import('./pages/StyleGuide')) : null
 
+function Brand() {
+  const { t } = useTranslation()
+  return (
+    <Link to="/" className="brand">
+      <img src="/favicon.svg" alt="" width="24" height="24" />
+      {t('appTitle')}
+    </Link>
+  )
+}
+
 function App() {
   const { t, i18n } = useTranslation()
-  const { user, error, logout } = useAuth()
+  const { user, error } = useAuth()
   const location = useLocation()
 
   // Browser tab title and <html lang> follow the chosen language.
@@ -28,71 +40,70 @@ function App() {
     document.documentElement.lang = i18n.resolvedLanguage ?? 'en'
   }, [t, i18n.resolvedLanguage])
 
-  let content
   if (StyleGuide && location.pathname === '/style') {
-    content = (
+    return (
       <Suspense fallback={null}>
         <StyleGuide />
       </Suspense>
     )
-  } else if (error) {
-    content = <ErrorMessage error={error} /> // couldn't even ask who's logged in
-  } else if (user === undefined) {
-    content = <p>{t('common.loading')}</p>
-  } else if (user === null) {
-    content = <Login />
-  } else {
-    content = (
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/invoices/new" element={<NewInvoice />} />
-        <Route path="/review" element={<ReviewQueue />} />
-        <Route path="/review/:id" element={<ReviewInvoice />} />
-        <Route
-          path="/staff"
-          element={user.role === 'owner' ? <Staff /> : <Navigate to="/" />}
-        />
-      </Routes>
+  }
+
+  // Not logged in (or not known yet): just the name, the language and the
+  // login form.
+  if (!user) {
+    let content
+    if (error) content = <ErrorMessage error={error} /> // couldn't even ask
+    else if (user === undefined) content = <p className="page">{t('common.loading')}</p>
+    else content = <Login />
+    return (
+      <div className="public">
+        <header className="topbar">
+          <Brand />
+          <LanguageSwitch />
+        </header>
+        <main className="content">{content}</main>
+      </div>
     )
   }
 
   return (
-    <>
-      <header>
-        <span className="brand">{t('appTitle')}</span>
-        {user && (
-          <nav aria-label={t('nav.home')}>
-            <NavLink to="/" end>
-              {t('nav.home')}
-            </NavLink>
-            <NavLink to="/invoices/new">{t('nav.newInvoice')}</NavLink>
-            <NavLink to="/review">{t('nav.review')}</NavLink>
-            {user.role === 'owner' && <NavLink to="/staff">{t('nav.staff')}</NavLink>}
-          </nav>
-        )}
-        <nav className="lang" aria-label={t('language')}>
-          {Object.entries(languages).map(([code, label]) => (
-            <button
-              key={code}
-              type="button"
-              disabled={i18n.resolvedLanguage === code}
-              onClick={() => i18n.changeLanguage(code)}
-            >
-              {label}
-            </button>
-          ))}
-        </nav>
-        {user && (
-          <span className="who">
-            {t('auth.loggedInAs', { email: user.email, role: t(`role.${user.role}`) })}
-            <button type="button" onClick={logout}>
-              {t('auth.logout')}
-            </button>
-          </span>
-        )}
+    <div className="shell">
+      <header className="topbar">
+        <Brand />
       </header>
-      <main>{content}</main>
-    </>
+      <nav className="mainnav" aria-label={t('nav.main')}>
+        <NavLink to="/" end>
+          <Icon name="home" />
+          {t('nav.home')}
+        </NavLink>
+        <NavLink to="/add">
+          <Icon name="add" />
+          {t('nav.add')}
+        </NavLink>
+        <NavLink to="/review">
+          <Icon name="check" />
+          {t('nav.check')}
+        </NavLink>
+        <NavLink to="/more">
+          <Icon name="more" />
+          {t('nav.more')}
+        </NavLink>
+      </nav>
+      <main className="content">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/add" element={<NewInvoice />} />
+          <Route path="/invoices/new" element={<NewInvoice />} />
+          <Route path="/review" element={<ReviewQueue />} />
+          <Route path="/review/:id" element={<ReviewInvoice />} />
+          <Route path="/more" element={<More />} />
+          <Route
+            path="/staff"
+            element={user.role === 'owner' ? <Staff /> : <Navigate to="/" />}
+          />
+        </Routes>
+      </main>
+    </div>
   )
 }
 

@@ -10,7 +10,11 @@
     "home": "Accueil",
     "newInvoice": "Nouvelle facture",
     "review": "Révision",
-    "staff": "Personnel"
+    "staff": "Personnel",
+    "main": "Menu principal",
+    "add": "Ajouter",
+    "check": "Vérifier",
+    "more": "Plus"
   },
   "common": {
     "loading": "Chargement…",
@@ -163,5 +167,12 @@
     "deactivated": "Compte désactivé. Cette personne a été déconnectée partout.",
     "reactivated": "Compte réactivé.",
     "passwordReset": "Mot de passe changé. Cette personne a été déconnectée partout."
+  },
+  "more": {
+    "title": "Plus",
+    "typeInvoice": "Saisir une facture",
+    "typeInvoiceHint": "Sans photo, ou si la photo est illisible",
+    "staffHint": "Ajouter du personnel, réinitialiser des mots de passe, désactiver des comptes",
+    "account": "Compte"
   }
 }

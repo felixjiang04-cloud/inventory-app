@@ -27,37 +27,41 @@ export default function Login() {
   }
 
   return (
-    <section className="login">
+    <div className="page login">
       <h1>{t('login.title')}</h1>
       <form onSubmit={submit}>
-        <label>
-          {t('login.email')}
+        <div className="field">
+          <label htmlFor="login-email">{t('login.email')}</label>
           <input
+            id="login-email"
             type="email"
             autoComplete="username"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-        </label>
-        <label>
-          {t('login.password')}
+        </div>
+        <div className="field">
+          <label htmlFor="login-password">{t('login.password')}</label>
           <input
+            id="login-password"
             type="password"
             autoComplete="current-password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-        </label>
+        </div>
         <ErrorMessage error={error} />
-        <p>
-          <button type="submit" disabled={busy}>
-            {t('login.submit')}
-          </button>
-        </p>
+        <button
+          type="submit"
+          className="btn btn-primary btn-large btn-block"
+          disabled={busy}
+        >
+          {t('login.submit')}
+        </button>
       </form>
-      <p className="muted">{t('login.forgotHint')}</p>
-    </section>
+      <p className="muted login-hint">{t('login.forgotHint')}</p>
+    </div>
   )
 }

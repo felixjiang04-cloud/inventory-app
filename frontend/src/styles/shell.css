@@ -1,0 +1,151 @@
+/* The frame around every screen. Phone first: a top bar with the name and
+   a tab bar at the bottom, in thumb reach. From 900 px wide the same
+   navigation becomes a sidebar on the left. */
+
+.topbar {
+  display: flex;
+  flex-wrap: wrap; /* on narrow phones the language switch takes its own row */
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 3.5rem;
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text);
+  font-weight: var(--weight-strong);
+  text-decoration: none;
+}
+
+.brand:hover {
+  color: var(--color-text);
+}
+
+/* --- Bottom tab bar (phones) ----------------------------------------------- */
+
+.mainnav {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 10;
+  display: grid;
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
+  height: calc(var(--tabbar-height) + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+}
+
+.mainnav a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  text-decoration: none;
+}
+
+.mainnav a.active {
+  color: var(--color-accent);
+  font-weight: var(--weight-strong);
+  box-shadow: inset 0 3px 0 var(--color-accent);
+}
+
+/* room so the last line of a page never hides behind the tab bar */
+.content {
+  padding-bottom: calc(var(--tabbar-height) + env(safe-area-inset-bottom));
+}
+
+/* --- Language switch ------------------------------------------------------- */
+
+.lang-switch {
+  display: inline-flex;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.lang-switch button {
+  min-height: var(--tap);
+  padding: 0 var(--space-3);
+  border: none;
+  background: var(--color-surface);
+  white-space: nowrap; /* "中文" must never break into two lines */
+  cursor: pointer;
+}
+
+.lang-switch button + button {
+  border-left: 1px solid var(--color-border-strong);
+}
+
+.lang-switch button[aria-pressed='true'] {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-weight: var(--weight-strong);
+}
+
+/* --- Computers: navigation as a sidebar ------------------------------------- */
+
+@media (min-width: 900px) {
+  .shell {
+    display: grid;
+    grid-template-columns: var(--sidebar-width) 1fr;
+    grid-template-rows: auto 1fr;
+    min-height: 100vh;
+  }
+
+  .shell .topbar {
+    grid-column: 1;
+    grid-row: 1;
+    border-right: 1px solid var(--color-border);
+    border-bottom: none;
+  }
+
+  .mainnav {
+    position: static;
+    grid-column: 1;
+    grid-row: 2;
+    grid-auto-flow: row;
+    grid-auto-rows: min-content;
+    gap: var(--space-1);
+    height: auto;
+    padding: var(--space-2);
+    border-top: none;
+    border-right: 1px solid var(--color-border);
+  }
+
+  .mainnav a {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: var(--space-3);
+    min-height: var(--tap);
+    padding: 0 var(--space-3);
+    border-radius: var(--radius);
+    font-size: var(--text-md);
+  }
+
+  .mainnav a:hover {
+    background: var(--color-sunken);
+  }
+
+  .mainnav a.active {
+    background: var(--color-accent-soft);
+    box-shadow: none;
+  }
+
+  .shell .content {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    padding-bottom: 0;
+  }
+}

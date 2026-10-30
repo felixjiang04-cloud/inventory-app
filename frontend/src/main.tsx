@@ -5,6 +5,7 @@ import '@fontsource-variable/source-sans-3' // bundled: no request to Google
 import './styles/tokens.css'
 import './styles/base.css'
 import './styles/components.css'
+import './styles/shell.css'
 import './i18n'
 import App from './App.tsx'
 import AuthProvider from './components/AuthProvider'

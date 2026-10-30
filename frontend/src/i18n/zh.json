@@ -10,7 +10,11 @@
     "home": "首页",
     "newInvoice": "新发票",
     "review": "审核",
-    "staff": "员工"
+    "staff": "员工",
+    "main": "主菜单",
+    "add": "添加",
+    "check": "核对",
+    "more": "更多"
   },
   "common": {
     "loading": "加载中…",
@@ -163,5 +167,12 @@
     "deactivated": "账户已停用，该员工已在所有设备上退出登录。",
     "reactivated": "账户已重新启用。",
     "passwordReset": "密码已更改，该员工已在所有设备上退出登录。"
+  },
+  "more": {
+    "title": "更多",
+    "typeInvoice": "手动录入发票",
+    "typeInvoiceHint": "没有照片或照片无法识别时使用",
+    "staffHint": "添加员工、重置密码、停用账户",
+    "account": "账户"
   }
 }

@@ -24,7 +24,7 @@ export default function ErrorMessage({ error }: { error: ApiError | null }) {
     : [{ code: error.code, context: error.context }]
 
   return (
-    <div className="error-box" role="alert">
+    <div className="notice notice-error" role="alert">
       {entries.map((entry, index) => {
         const vars: Record<string, unknown> = { ...entry.context }
         for (const [centsKey, name] of Object.entries(CENTS_KEYS)) {

@@ -40,7 +40,7 @@ describe('logging in', () => {
 
     expect(await screen.findByRole('heading', { name: 'Log in' })).toBeInTheDocument()
     // nothing of the app is reachable before logging in
-    expect(screen.queryByRole('link', { name: 'Review' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Check' })).not.toBeInTheDocument()
 
     await user.type(screen.getByLabelText('Email'), 'chef@resto.ca')
     await user.type(screen.getByLabelText('Password'), 'wrong one')
@@ -48,8 +48,10 @@ describe('logging in', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Wrong email or password.')
 
     await user.click(screen.getByRole('button', { name: 'Log in' }))
+    // the app's navigation appears; the account details live under "More"
+    await user.click(await screen.findByRole('link', { name: 'More' }))
     expect(await screen.findByText('chef@resto.ca (owner)')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Staff' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /^Staff/ })).toBeInTheDocument()
   })
 
   it('tells a locked-out user how long to wait', async () => {
@@ -83,10 +85,10 @@ describe('logging in', () => {
   })
 
   it('gives staff no link to staff accounts', async () => {
-    renderApp('/', {
+    renderApp('/more', {
       '/api/auth/me': { body: { id: 2, email: 'bo@resto.ca', role: 'staff' } },
     })
     expect(await screen.findByText('bo@resto.ca (staff)')).toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: 'Staff' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /^Staff/ })).not.toBeInTheDocument()
   })
 })

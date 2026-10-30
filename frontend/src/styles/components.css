@@ -288,3 +288,13 @@ a.list-row:hover {
   background: var(--color-surface);
   border-top: 1px solid var(--color-border);
 }
+
+/* --- Log in ------------------------------------------------------------------ */
+
+.login {
+  max-width: 26rem;
+}
+
+.login-hint {
+  margin-top: var(--space-4);
+}
