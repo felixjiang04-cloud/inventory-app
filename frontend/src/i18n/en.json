@@ -1,20 +1,14 @@
 {
   "appTitle": "Restaurant Inventory",
-  "tagline": "Track your stock from invoice photos",
-  "serverStatus": "Server status",
-  "serverChecking": "Checking…",
-  "serverOk": "Connected",
-  "serverDown": "Not reachable",
   "language": "Language",
   "nav": {
     "home": "Home",
-    "newInvoice": "New invoice",
-    "review": "Review",
     "staff": "Staff",
     "main": "Main menu",
     "add": "Add",
     "check": "Check",
-    "more": "More"
+    "more": "More",
+    "stock": "Stock"
   },
   "common": {
     "loading": "Loading…",
@@ -184,6 +178,36 @@
     "typeInvoice": "Type an invoice",
     "typeInvoiceHint": "When there's no photo, or the photo can't be read",
     "staffHint": "Add staff, reset passwords, deactivate accounts",
-    "account": "Account"
+    "account": "Account",
+    "postedHint": "Every invoice already in stock, with its photo"
+  },
+  "home": {
+    "title": "To do",
+    "addInvoice": "Add an invoice",
+    "typeInstead": "Or type one in",
+    "allClear": "Nothing waiting. When an invoice arrives, add it with the button above.",
+    "photosToFinish_one": "{{count}} photo to finish",
+    "photosToFinish_other": "{{count}} photos to finish",
+    "photosToFinishHint": "Waiting to be read, or read but not saved yet",
+    "invoicesToCheck_one": "{{count}} invoice to check",
+    "invoicesToCheck_other": "{{count}} invoices to check",
+    "invoicesToCheckHint": "Confirm the lines, then add them to stock",
+    "recent": "Recently added to stock",
+    "recentEmpty": "No invoices added to stock yet.",
+    "seeAllPosted": "All invoices added to stock"
+  },
+  "stock": {
+    "title": "Stock",
+    "search": "Search items",
+    "empty": "No items yet. Items are created when you confirm the lines of an invoice.",
+    "noMatch": "No item matches “{{search}}”.",
+    "lastDelivery": "Last delivery {{date}}",
+    "neverDelivered": "No delivery yet",
+    "spent": "{{amount}} spent"
+  },
+  "posted": {
+    "title": "Invoices added to stock",
+    "search": "Search by supplier or invoice number",
+    "noMatch": "No invoice matches “{{search}}”."
   }
 }

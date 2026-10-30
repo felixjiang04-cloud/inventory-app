@@ -10,9 +10,11 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import More from './pages/More'
 import NewInvoice from './pages/NewInvoice'
+import Posted from './pages/Posted'
 import ReviewInvoice from './pages/ReviewInvoice'
 import ReviewQueue from './pages/ReviewQueue'
 import Staff from './pages/Staff'
+import Stock from './pages/Stock'
 
 // The /style page exists only while developing (`npm run dev`); the
 // production build drops it entirely.
@@ -83,6 +85,10 @@ function App() {
           <Icon name="check" />
           {t('nav.check')}
         </NavLink>
+        <NavLink to="/stock">
+          <Icon name="stock" />
+          {t('nav.stock')}
+        </NavLink>
         <NavLink to="/more">
           <Icon name="more" />
           {t('nav.more')}
@@ -95,6 +101,8 @@ function App() {
           <Route path="/invoices/new" element={<NewInvoice />} />
           <Route path="/review" element={<ReviewQueue />} />
           <Route path="/review/:id" element={<ReviewInvoice />} />
+          <Route path="/stock" element={<Stock />} />
+          <Route path="/posted" element={<Posted />} />
           <Route path="/more" element={<More />} />
           <Route
             path="/staff"

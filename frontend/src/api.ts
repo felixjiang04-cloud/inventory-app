@@ -105,6 +105,17 @@ export interface QueueInvoice {
   total_cents: number
   line_count: number
   unconfirmed_lines: number
+  posted_at: string | null // when it was added to stock
+}
+
+// One row of the stock list: read straight from the ledger (GET /api/stock).
+export interface StockRow {
+  id: number
+  name: string
+  base_unit: 'g' | 'ml' | 'each'
+  qty: number // whole base units
+  spent_cents: number
+  last_delivery: string | null // YYYY-MM-DD
 }
 
 export interface InvoiceLine {

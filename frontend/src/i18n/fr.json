@@ -1,20 +1,14 @@
 {
   "appTitle": "Inventaire Restaurant",
-  "tagline": "Suivez vos stocks à partir de photos de factures",
-  "serverStatus": "Statut du serveur",
-  "serverChecking": "Vérification…",
-  "serverOk": "Connecté",
-  "serverDown": "Injoignable",
   "language": "Langue",
   "nav": {
     "home": "Accueil",
-    "newInvoice": "Nouvelle facture",
-    "review": "Révision",
     "staff": "Personnel",
     "main": "Menu principal",
     "add": "Ajouter",
     "check": "Vérifier",
-    "more": "Plus"
+    "more": "Plus",
+    "stock": "Stock"
   },
   "common": {
     "loading": "Chargement…",
@@ -184,6 +178,36 @@
     "typeInvoice": "Saisir une facture",
     "typeInvoiceHint": "Sans photo, ou si la photo est illisible",
     "staffHint": "Ajouter du personnel, réinitialiser des mots de passe, désactiver des comptes",
-    "account": "Compte"
+    "account": "Compte",
+    "postedHint": "Toutes les factures déjà en stock, avec leur photo"
+  },
+  "home": {
+    "title": "À faire",
+    "addInvoice": "Ajouter une facture",
+    "typeInstead": "Ou la saisir à la main",
+    "allClear": "Rien en attente. Quand une facture arrive, ajoutez-la avec le bouton ci-dessus.",
+    "photosToFinish_one": "{{count}} photo à terminer",
+    "photosToFinish_other": "{{count}} photos à terminer",
+    "photosToFinishHint": "En attente de lecture, ou lue mais pas encore enregistrée",
+    "invoicesToCheck_one": "{{count}} facture à vérifier",
+    "invoicesToCheck_other": "{{count}} factures à vérifier",
+    "invoicesToCheckHint": "Confirmez les lignes, puis ajoutez-les au stock",
+    "recent": "Ajoutées récemment au stock",
+    "recentEmpty": "Aucune facture ajoutée au stock pour l'instant.",
+    "seeAllPosted": "Toutes les factures ajoutées au stock"
+  },
+  "stock": {
+    "title": "Stock",
+    "search": "Chercher un article",
+    "empty": "Aucun article pour l'instant. Les articles sont créés quand vous confirmez les lignes d'une facture.",
+    "noMatch": "Aucun article ne correspond à « {{search}} ».",
+    "lastDelivery": "Dernière livraison le {{date}}",
+    "neverDelivered": "Aucune livraison pour l'instant",
+    "spent": "{{amount}} dépensés"
+  },
+  "posted": {
+    "title": "Factures ajoutées au stock",
+    "search": "Chercher par fournisseur ou numéro de facture",
+    "noMatch": "Aucune facture ne correspond à « {{search}} »."
   }
 }

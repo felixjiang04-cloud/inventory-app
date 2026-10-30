@@ -425,3 +425,19 @@ a.list-row:hover {
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
 }
+
+/* --- Home and stock ---------------------------------------------------------------- */
+
+.home-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+}
+
+/* the number someone opens the stock page for */
+.stock-qty {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-strong);
+}

@@ -23,6 +23,14 @@ export default function More() {
             </span>
           </Link>
         </li>
+        <li>
+          <Link className="list-row" to="/posted">
+            <span className="list-row-main">
+              <span className="list-row-title">{t('posted.title')}</span>
+              <span className="list-row-meta">{t('more.postedHint')}</span>
+            </span>
+          </Link>
+        </li>
         {user.role === 'owner' && (
           <li>
             <Link className="list-row" to="/staff">

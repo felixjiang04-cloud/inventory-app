@@ -14,7 +14,13 @@ const notLoggedIn = {
 }
 
 function renderApp(path: string, routes: Record<string, FakeRoute | FakeRoute[]>) {
-  fakeFetch({ '/api/health': { body: { status: 'ok' } }, ...routes })
+  // what the home page asks for, nothing waiting unless a test says so
+  fakeFetch({
+    '/api/invoice-photos': { body: [] },
+    '/api/invoices': { body: [] },
+    '/api/invoices?status=posted&limit=5': { body: [] },
+    ...routes,
+  })
   render(
     <MemoryRouter initialEntries={[path]}>
       <AuthProvider>
