@@ -18,6 +18,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
+  min-height: var(--tap); /* it's a link home: big enough for a thumb */
   color: var(--color-text);
   font-weight: var(--weight-strong);
   text-decoration: none;
