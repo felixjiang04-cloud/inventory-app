@@ -57,6 +57,10 @@ the checklist at the end.
 
 ## Do instead
 
+- **One set of building blocks, five looks.** Each phone picks a look on
+  the More page (Ticket by default). Colours and fonts live per look in
+  `frontend/src/styles/looks/` (Ticket's in `tokens.css`), so a screen
+  built from the shared classes and tokens works in all five.
 - **Design for the real place.** A phone held in one hand, maybe wet
   hands, bad light: big tap targets (44 px or more), high contrast,
   few steps, the main action within thumb reach.
@@ -100,3 +104,5 @@ the checklist at the end.
 6. Are dates, money and units in the reader's language format?
 7. Do the empty, loading and error states say what to do next?
 8. Can it be used with a keyboard alone, with visible focus?
+9. Does it look right in all five looks? (Switch them on the More page
+   or the development `/style` page.)

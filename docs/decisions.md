@@ -119,3 +119,26 @@ Newest entries at the bottom.
   depends on the hosting's proxy setup; misconfigured, every visitor
   would share the proxy's address and one attacker would lock everyone
   out. Revisit when choosing hosting.
+
+## 2026-11-03 — Five selectable looks, Ticket by default
+
+- **Five looks instead of one.** Out of the 20 directions in the look
+  book (`design/directions/`), the owner picked Ticket, Signal, Bistro,
+  Pâtisserie and Herbier. Ticket (the kitchen order ticket) replaces the
+  ink-blue look as the default; the other four can be chosen on the
+  More page.
+- **Chosen per device, not per account.** Each phone or computer keeps
+  its own look in the browser (localStorage): no database change, and
+  staff can pick what reads best on their own phone. Moving the choice
+  to the account later is a small change if people want it to follow
+  them.
+- **How it's built.** `tokens.css` holds Ticket's values; each other look
+  sets the same token names in `styles/looks/<look>.css`, plus a few
+  rules, all switched on by `<html data-look="…">` (`src/look.ts`).
+- **Fonts stay bundled** (`@fontsource`), so still no request to Google.
+  Ticket's font loads with the app; the others are separate files,
+  downloaded only when someone picks that look or opens the More page.
+- **Checked, not assumed:** every look passes WCAG AA contrast, uses
+  tabular figures for money and quantities, keeps tap targets at 44 px
+  or more and never scrolls sideways on a phone, in all three languages
+  (measured in the look book and on every app screen).
