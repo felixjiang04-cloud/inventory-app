@@ -4,6 +4,7 @@
 
 import { useTranslation } from 'react-i18next'
 
+import LookPicker from '../components/LookPicker'
 import { useFormat } from '../useFormat'
 import './StyleGuide.css'
 
@@ -42,6 +43,10 @@ export default function StyleGuide() {
         <h1>{t('appTitle')}</h1>
         <code>/style</code>
       </div>
+
+      {/* switch looks here to check every building block in each one */}
+      <h2 id="sg-look">{t('look.title')}</h2>
+      <LookPicker labelledBy="sg-look" />
 
       <h2>
         <code>tokens.css</code>
@@ -147,6 +152,42 @@ export default function StyleGuide() {
         {format.qty(10000, 'g')} · {format.qty(1234, 'g')} · {format.qty(3000, 'ml')} ·{' '}
         {format.qty(12, 'each')}
       </p>
+
+      <h2>
+        <code>.line-card</code>
+      </h2>
+      <ol className="line-cards">
+        <li className="line-card">
+          <div className="line-card-head">
+            <span className="line-card-text">TOMATES ROMA 5KG</span>
+            <span className="num">{format.money(4500)}</span>
+          </div>
+          <p className="list-row-meta">
+            {t('newInvoice.quantity')}: 3
+          </p>
+          <div className="field">
+            <label htmlFor="sg-line-qty">{t('review.qtyPerUnit', { unit: t('unit.g') })}</label>
+            <input
+              id="sg-line-qty"
+              className="num needs-check"
+              inputMode="numeric"
+              defaultValue="5000"
+            />
+          </div>
+          <button type="button" className="btn btn-primary">
+            {t('review.confirmLine')}
+          </button>
+        </li>
+        <li className="line-card line-card-done">
+          <div className="line-card-head">
+            <span className="line-card-text">HUILE OLIVE 3L</span>
+            <span className="num">{format.money(2500)}</span>
+          </div>
+          <p className="line-card-result">
+            Huile d'olive · {t('review.confirmedAs', { qty: format.qty(3000, 'ml') })}
+          </p>
+        </li>
+      </ol>
 
       <h2>
         <code>.chip</code> · <code>.empty-state</code>

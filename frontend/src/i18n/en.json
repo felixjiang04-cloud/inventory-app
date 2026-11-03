@@ -184,6 +184,25 @@
     "account": "Account",
     "postedHint": "Every invoice already in stock, with its photo"
   },
+  "look": {
+    "title": "Look",
+    "hint": "Changes how the app looks on this phone or computer only.",
+    "sample": "Aa",
+    "names": {
+      "ticket": "Ticket",
+      "signal": "Signal",
+      "bistro": "Bistro",
+      "patisserie": "Pâtisserie",
+      "herbier": "Herbier"
+    },
+    "descriptions": {
+      "ticket": "Like a kitchen order ticket: monospaced type and dashed lines.",
+      "signal": "Like station signs: big, clear type on black bands.",
+      "bistro": "Like a bistro menu: dotted lines from each item to its number.",
+      "patisserie": "Pale rose and cocoa, with an elegant serif for titles.",
+      "herbier": "Like a botanical plate: ivory paper and italic names."
+    }
+  },
   "home": {
     "title": "To do",
     "addInvoice": "Add an invoice",

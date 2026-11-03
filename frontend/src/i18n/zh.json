@@ -184,6 +184,25 @@
     "account": "账户",
     "postedHint": "所有已入库的发票及其照片"
   },
+  "look": {
+    "title": "外观",
+    "hint": "只更改这台手机或电脑上的外观。",
+    "sample": "Aa",
+    "names": {
+      "ticket": "小票",
+      "signal": "标识",
+      "bistro": "小酒馆",
+      "patisserie": "甜品",
+      "herbier": "植物图谱"
+    },
+    "descriptions": {
+      "ticket": "像厨房小票：等宽字体，虚线分隔。",
+      "signal": "像车站标识：黑色标题栏，大而清晰的字。",
+      "bistro": "像小酒馆菜单：品名和数字之间用点线连接。",
+      "patisserie": "淡粉配可可色，标题用优雅的衬线字体。",
+      "herbier": "像植物图谱：象牙色纸张，细线边框。"
+    }
+  },
   "home": {
     "title": "待办",
     "addInvoice": "添加发票",

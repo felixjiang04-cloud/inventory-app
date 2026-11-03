@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom'
 
 import { useAuth } from '../auth'
 import LanguageSwitch from '../components/LanguageSwitch'
+import LookPicker from '../components/LookPicker'
 
 // Everything that doesn't need a tab of its own: typed entry, staff,
-// language and the account.
+// language, the look and the account.
 export default function More() {
   const { t } = useTranslation()
   const { user, logout } = useAuth()
@@ -45,6 +46,10 @@ export default function More() {
 
       <h2>{t('language')}</h2>
       <LanguageSwitch />
+
+      <h2 id="look-title">{t('look.title')}</h2>
+      <p className="muted">{t('look.hint')}</p>
+      <LookPicker labelledBy="look-title" />
 
       <h2>{t('more.account')}</h2>
       <p>{t('auth.loggedInAs', { email: user.email, role: t(`role.${user.role}`) })}</p>

@@ -184,6 +184,25 @@
     "account": "Compte",
     "postedHint": "Toutes les factures déjà en stock, avec leur photo"
   },
+  "look": {
+    "title": "Apparence",
+    "hint": "Ne change l'apparence que sur ce téléphone ou cet ordinateur.",
+    "sample": "Aa",
+    "names": {
+      "ticket": "Ticket",
+      "signal": "Signal",
+      "bistro": "Bistro",
+      "patisserie": "Pâtisserie",
+      "herbier": "Herbier"
+    },
+    "descriptions": {
+      "ticket": "Comme un bon de cuisine : caractères à chasse fixe et pointillés.",
+      "signal": "Comme la signalétique d'une gare : gros caractères nets sur bandeaux noirs.",
+      "bistro": "Comme une carte de bistro : des pointillés relient chaque article à son chiffre.",
+      "patisserie": "Rose pâle et cacao, avec une élégante police à empattements pour les titres.",
+      "herbier": "Comme une planche botanique : papier ivoire et noms en italique."
+    }
+  },
   "home": {
     "title": "À faire",
     "addInvoice": "Ajouter une facture",

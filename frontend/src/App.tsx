@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom'
 
 import { useAuth } from './auth'
+import BrandMark from './components/BrandMark'
 import ErrorMessage from './components/ErrorMessage'
 import Icon from './components/Icon'
 import LanguageSwitch from './components/LanguageSwitch'
@@ -25,7 +26,7 @@ function Brand() {
   const { t } = useTranslation()
   return (
     <Link to="/" className="brand">
-      <img src="/favicon.svg" alt="" width="24" height="24" />
+      <BrandMark />
       {t('appTitle')}
     </Link>
   )
