@@ -1,0 +1,534 @@
+@charset "UTF-8";
+/* The app's own styles (frontend/src/styles/*.css), copied for the mockups and
+   scoped to .mock so twenty directions can sit on one page. Only the rules the
+   Home and Stock screens use are here. Differences from the app:
+   - :root and body become .mock (one .mock per mocked-up screen)
+   - @media (min-width: 900px) becomes @container (min-width: 900px), so each
+     frame lays itself out by its own width, not the browser window's
+   - the phone tab bar is absolute inside its frame instead of fixed
+   - env(safe-area-inset-bottom) is left out
+   A direction = new values for the tokens below + a few rules ("tweaks") on
+   these same class names. */
+
+.frame {
+  container-type: inline-size;
+}
+
+/* --- Tokens: today's values from tokens.css ------------------------------- */
+
+.mock {
+  --color-bg: #f6f4ef;
+  --color-surface: #ffffff;
+  --color-sunken: #efece5;
+  --color-text: #1d1b18;
+  --color-text-muted: #5e584f;
+  --color-border: #dcd6cb;
+  --color-border-strong: #b5ad9f;
+  --color-focus: #3d7cc0;
+  --color-accent: #1f4e79;
+  --color-accent-hover: #163b5c;
+  --color-accent-soft: #e5edf5;
+  --color-on-accent: #ffffff;
+  --color-ok: #1d6a39;
+  --color-ok-soft: #e7f2ea;
+  --color-warn: #7d4c00;
+  --color-warn-soft: #fcf1dc;
+  --color-warn-border: #d4962a;
+  --color-danger: #a3261a;
+  --color-danger-soft: #fbeae8;
+  --font-body: 'Source Sans 3', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei',
+    'Noto Sans CJK SC', system-ui, sans-serif;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --weight-strong: 600;
+  --leading: 1.45;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --radius: 6px;
+  --tap: 2.75rem;
+  --content-width: 46rem;
+  --sidebar-width: 14rem;
+  --tabbar-height: 4.25rem;
+
+  /* New tokens some directions use. Their defaults keep today's look. */
+  --font-heading: var(--font-body);
+  --font-num: var(--font-body);
+  --weight-heading: var(--weight-strong);
+  --tracking-heading: normal;
+  --rule: 1px; /* weight of borders and rules */
+  --brand-tile: var(--color-accent); /* the logo's square */
+  --brand-paper: var(--color-on-accent); /* the logo's invoice */
+}
+
+/* --- base.css ------------------------------------------------------------- */
+
+.mock,
+.mock *,
+.mock *::before,
+.mock *::after {
+  box-sizing: border-box;
+}
+
+.mock {
+  position: relative;
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  line-height: var(--leading);
+  color: var(--color-text);
+  background: var(--color-bg);
+  text-align: left;
+  -webkit-text-size-adjust: 100%;
+}
+
+.mock h1,
+.mock h2,
+.mock h3 {
+  margin: 0 0 var(--space-3);
+  line-height: 1.2;
+  font-family: var(--font-heading);
+  font-weight: var(--weight-heading);
+  letter-spacing: var(--tracking-heading);
+  text-wrap: balance;
+}
+
+.mock h1 {
+  font-size: var(--text-2xl);
+}
+
+.mock h2 {
+  font-size: var(--text-xl);
+  margin-top: var(--space-6);
+}
+
+.mock p {
+  margin: 0 0 var(--space-3);
+}
+
+.mock a {
+  color: var(--color-accent);
+  text-underline-offset: 0.15em;
+}
+
+.mock a:hover {
+  color: var(--color-accent-hover);
+}
+
+.mock input,
+.mock button {
+  font: inherit;
+  color: inherit;
+}
+
+.mock input {
+  min-height: var(--tap);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface);
+  border: var(--rule) solid var(--color-border-strong);
+  border-radius: var(--radius);
+}
+
+.mock input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+.mock :focus-visible,
+.mock .is-focus {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Numbers that must line up in columns: money, quantities */
+.mock .num {
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums lining-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.mock .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* --- components.css --------------------------------------------------------- */
+
+.mock .page {
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: var(--space-5) var(--space-4) var(--space-7);
+}
+
+.mock .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--tap);
+  padding: 0 var(--space-4);
+  border: var(--rule) solid var(--color-border-strong);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: var(--weight-strong);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 120ms ease-out, border-color 120ms ease-out;
+}
+
+.mock .btn:hover {
+  background: var(--color-sunken);
+  color: var(--color-text);
+}
+
+.mock .btn-primary {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.mock .btn-primary:hover {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+  color: var(--color-on-accent);
+}
+
+.mock .btn-quiet {
+  border-color: transparent;
+  background: transparent;
+  color: var(--color-accent);
+  padding: 0 var(--space-2);
+}
+
+.mock .btn-quiet:hover {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+.mock .btn-block {
+  width: 100%;
+}
+
+.mock .btn-large {
+  min-height: 3.5rem;
+  font-size: var(--text-lg);
+}
+
+.mock .field {
+  margin-bottom: var(--space-4);
+}
+
+.mock .field input {
+  width: 100%;
+}
+
+.mock .list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--color-surface);
+  border: var(--rule) solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.mock .list > li + li {
+  border-top: var(--rule) solid var(--color-border);
+}
+
+.mock .list-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 3.5rem;
+  padding: var(--space-3) var(--space-4);
+  color: inherit;
+  text-decoration: none;
+}
+
+.mock a.list-row:hover {
+  background: var(--color-sunken);
+  color: inherit;
+}
+
+.mock .list-row-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.mock .list-row-title {
+  font-weight: var(--weight-strong);
+  overflow-wrap: anywhere;
+}
+
+.mock .list-row-meta {
+  display: block;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.mock .list-row-end {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-1);
+}
+
+.mock .badge {
+  display: inline-block;
+  padding: 0.1rem var(--space-2);
+  border-radius: var(--radius);
+  background: var(--color-sunken);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-strong);
+  white-space: nowrap;
+}
+
+.mock .badge-warn {
+  background: var(--color-warn-soft);
+  color: var(--color-warn);
+}
+
+.mock .notice {
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid;
+  border-left-width: 4px;
+  border-radius: var(--radius);
+}
+
+.mock .notice p {
+  margin: 0;
+}
+
+.mock .notice-error {
+  background: var(--color-danger-soft);
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.mock .notice-ok {
+  background: var(--color-ok-soft);
+  border-color: var(--color-ok);
+  color: var(--color-ok);
+}
+
+.mock .empty-state {
+  padding: var(--space-5) var(--space-4);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius);
+  color: var(--color-text-muted);
+}
+
+.mock .empty-state p:last-child {
+  margin-bottom: 0;
+}
+
+.mock .after-list {
+  margin-top: var(--space-4);
+}
+
+/* Suggested fix for every direction (and today's app): this link was one
+   23 px line of text; give it the full 44 px tap height. */
+.mock .after-list a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+}
+
+.mock .home-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+}
+
+/* the number someone opens the stock page for */
+.mock .stock-qty {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-strong);
+}
+
+@container (min-width: 900px) {
+  .mock .home-actions .btn-block {
+    width: auto;
+    min-width: 18rem;
+  }
+}
+
+/* --- shell.css -------------------------------------------------------------- */
+
+.mock .topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 3.5rem;
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-surface);
+  border-bottom: var(--rule) solid var(--color-border);
+}
+
+.mock .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--tap);
+  color: var(--color-text);
+  font-weight: var(--weight-strong);
+  text-decoration: none;
+}
+
+.mock .brand:hover {
+  color: var(--color-text);
+}
+
+.mock .brand-mark {
+  flex: none;
+}
+
+.mock .bm-tile,
+.mock .bm-line {
+  fill: var(--brand-tile);
+}
+
+.mock .bm-paper {
+  fill: var(--brand-paper);
+}
+
+.mock .mainnav {
+  position: absolute; /* app: fixed to the bottom of the screen */
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 10;
+  display: grid;
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
+  height: var(--tabbar-height);
+  background: var(--color-surface);
+  border-top: var(--rule) solid var(--color-border);
+}
+
+.mock .mainnav a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  text-decoration: none;
+}
+
+.mock .mainnav a.active {
+  color: var(--color-accent);
+  font-weight: var(--weight-strong);
+  box-shadow: inset 0 3px 0 var(--color-accent);
+}
+
+.mock .content {
+  padding-bottom: var(--tabbar-height);
+}
+
+@container (min-width: 900px) {
+  .mock .shell {
+    display: grid;
+    grid-template-columns: var(--sidebar-width) 1fr;
+    grid-template-rows: auto 1fr;
+    min-height: 100%;
+  }
+
+  .mock .shell .topbar {
+    grid-column: 1;
+    grid-row: 1;
+    border-right: var(--rule) solid var(--color-border);
+    border-bottom: none;
+  }
+
+  .mock .mainnav {
+    position: static;
+    grid-column: 1;
+    grid-row: 2;
+    grid-auto-flow: row;
+    grid-auto-rows: min-content;
+    gap: var(--space-1);
+    height: auto;
+    padding: var(--space-2);
+    border-top: none;
+    border-right: var(--rule) solid var(--color-border);
+  }
+
+  .mock .mainnav a {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: var(--space-3);
+    min-height: var(--tap);
+    padding: 0 var(--space-3);
+    border-radius: var(--radius);
+    font-size: var(--text-md);
+  }
+
+  .mock .mainnav a:hover {
+    background: var(--color-sunken);
+  }
+
+  .mock .mainnav a.active {
+    background: var(--color-accent-soft);
+    box-shadow: none;
+  }
+
+  .mock .shell .content {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    padding-bottom: 0;
+  }
+}
+
+/* --- Mockup frames (not part of the app) ------------------------------------- */
+
+/* A phone screen: fixed size, the page scrolls behind the tab bar like the
+   real thing. */
+.frame-phone .mock {
+  height: 100%;
+  overflow: hidden;
+}
+
+.frame-phone .shell {
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.frame-desktop .mock,
+.frame-desktop .shell {
+  height: 100%;
+}
+
+/* A short stack of states: needs checking, confirmed, error, keyboard focus */
+.frame-states .mock {
+  min-height: 100%;
+}
+
+.frame-states .page {
+  padding: var(--space-4);
+}
+
+.mock .states-focus {
+  margin-top: var(--space-2);
+}
