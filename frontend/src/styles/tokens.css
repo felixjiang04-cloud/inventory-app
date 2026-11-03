@@ -1,43 +1,54 @@
-/* Design settings: the only place colours, sizes and spacing are chosen.
-   Everything else refers to these names, so a change here changes the app.
-   Rules behind the choices: docs/design-guidelines.md */
+/* Design settings: colours, type, sizes and spacing. Everything else refers
+   to these names, so a change here changes the app.
 
-:root {
-  /* Surfaces and text: warm neutrals, not cold blue-greys */
-  --color-bg: #f6f4ef;
-  --color-surface: #ffffff;
-  --color-sunken: #efece5; /* inset areas: hover, table headers */
-  --color-text: #1d1b18;
-  --color-text-muted: #5e584f; /* passes AA contrast on bg and surface */
-  --color-border: #dcd6cb;
-  --color-border-strong: #b5ad9f; /* input outlines */
-  --color-focus: #3d7cc0;
+   These are the values of Ticket, the default look. Each other look in
+   styles/looks/ sets all of these names again for itself (see look.ts).
+   [data-look-preview] lets a small sample on the More page show a look
+   that isn't the current one. Rules behind the choices:
+   docs/design-guidelines.md */
 
-  /* The one accent colour: ink blue. To try another, change these four. */
-  --color-accent: #1f4e79;
-  --color-accent-hover: #163b5c;
-  --color-accent-soft: #e5edf5;
-  --color-on-accent: #ffffff;
+:root,
+[data-look-preview='ticket'] {
+  /* Surfaces and text: warm neutrals. Ticket: white ticket paper on a
+     counter-grey ground. */
+  --color-bg: #dedcd6;
+  --color-surface: #fffefb;
+  --color-sunken: #f1efea; /* inset areas: hover, table headers */
+  --color-text: #121211;
+  --color-text-muted: #4a4741; /* passes AA contrast on bg and surface */
+  --color-border: #8a867e;
+  --color-border-strong: #121211; /* input outlines: 3:1 or more */
+  --color-focus: #1d55c4;
+
+  /* The one accent colour. Ticket: printer black. */
+  --color-accent: #121211;
+  --color-accent-hover: #34322e;
+  --color-accent-soft: #e9e7e1;
+  --color-on-accent: #fffefb;
 
   /* Colours that carry meaning, never decoration */
-  --color-ok: #1d6a39; /* confirmed, saved */
-  --color-ok-soft: #e7f2ea;
-  --color-warn: #7d4c00; /* needs checking */
-  --color-warn-soft: #fcf1dc;
-  --color-warn-border: #d4962a;
-  --color-danger: #a3261a; /* errors */
-  --color-danger-soft: #fbeae8;
+  --color-ok: #1b6a37; /* confirmed, saved */
+  --color-ok-soft: #e6f1e8;
+  --color-warn: #774700; /* needs checking */
+  --color-warn-soft: #f9ecd0;
+  --color-warn-border: #c4861a;
+  --color-danger: #a1241a; /* errors */
+  --color-danger-soft: #fae6e2;
 
-  /* Type: one family; Chinese falls back to the device's own font */
-  --font-body: 'Source Sans 3 Variable', 'PingFang SC', 'Hiragino Sans GB',
-    'Microsoft YaHei', 'Noto Sans CJK SC', system-ui, sans-serif;
+  /* Type: Chinese falls back to the device's own font */
+  --font-body: 'JetBrains Mono Variable', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Noto Sans CJK SC', ui-monospace, monospace;
+  --font-heading: var(--font-body);
+  --font-num: var(--font-body); /* money and quantities */
   --text-sm: 0.875rem;
   --text-md: 1rem; /* never smaller for inputs: phones zoom in below 16 px */
   --text-lg: 1.125rem;
-  --text-xl: 1.375rem;
-  --text-2xl: 1.75rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
   --weight-strong: 600;
-  --leading: 1.45;
+  --weight-heading: 800;
+  --tracking-heading: 0.04em;
+  --leading: 1.5;
 
   /* Spacing: steps of 4 px */
   --space-1: 0.25rem;
@@ -49,9 +60,14 @@
   --space-7: 3rem;
 
   /* Shapes and sizes */
-  --radius: 6px;
+  --radius: 0px;
+  --rule: 1px; /* weight of borders and rules */
   --tap: 2.75rem; /* 44 px: the smallest thing a thumb should have to hit */
   --content-width: 46rem;
   --sidebar-width: 14rem;
   --tabbar-height: 4.25rem;
+
+  /* The logo in the top bar (components/BrandMark.tsx) */
+  --brand-tile: var(--color-accent);
+  --brand-paper: var(--color-on-accent);
 }

@@ -1,0 +1,104 @@
+/* Ticket, the default look: the kitchen order ticket. Monospaced type,
+   uppercase headings, dashed tear lines between items, and a solid black
+   main button like the bump bar on a kitchen screen.
+
+   Its colours and fonts are the defaults in tokens.css. The rules below
+   apply only while Ticket is chosen (<html data-look="ticket">). */
+
+:root[data-look='ticket'] h1,
+:root[data-look='ticket'] h2 {
+  text-transform: uppercase;
+}
+
+/* section titles read like a ticket's headings: small and bold */
+:root[data-look='ticket'] h2 {
+  font-size: var(--text-sm);
+}
+
+/* lists are ticket strips: white paper between dashed tear lines */
+:root[data-look='ticket'] .list {
+  border: 0;
+  border-top: 2px dashed var(--color-text);
+  border-bottom: 2px dashed var(--color-text);
+}
+
+:root[data-look='ticket'] .list > li + li {
+  border-top-style: dashed;
+}
+
+:root[data-look='ticket'] .list-row-title {
+  text-transform: uppercase;
+}
+
+:root[data-look='ticket'] .stock-qty {
+  font-size: 1.375rem;
+  font-weight: 800;
+}
+
+:root[data-look='ticket'] .empty-state {
+  background: var(--color-surface);
+  border: 0;
+  border-top: 2px dashed var(--color-text);
+  border-bottom: 2px dashed var(--color-text);
+  color: var(--color-text);
+}
+
+/* the main button is the bump bar */
+:root[data-look='ticket'] .btn-primary {
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+:root[data-look='ticket'] .btn-large {
+  min-height: 3.75rem;
+}
+
+:root[data-look='ticket'] .btn-quiet {
+  color: var(--color-text);
+  text-decoration: underline;
+  text-transform: uppercase;
+}
+
+:root[data-look='ticket'] input,
+:root[data-look='ticket'] select,
+:root[data-look='ticket'] textarea {
+  border-width: 2px;
+}
+
+:root[data-look='ticket'] .topbar {
+  background: var(--color-bg);
+  border-bottom: 2px solid var(--color-text);
+}
+
+:root[data-look='ticket'] .brand {
+  font-size: var(--text-sm);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+:root[data-look='ticket'] .mainnav {
+  border-top: 2px dashed var(--color-text);
+}
+
+:root[data-look='ticket'] .mainnav a {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+:root[data-look='ticket'] .mainnav a.active {
+  color: var(--color-text);
+  font-weight: 800;
+  box-shadow: inset 0 -5px 0 var(--color-text);
+}
+
+@media (min-width: 900px) {
+  :root[data-look='ticket'] .mainnav a {
+    font-size: var(--text-sm);
+  }
+
+  :root[data-look='ticket'] .mainnav a.active {
+    background: var(--color-sunken);
+    box-shadow: inset 5px 0 0 var(--color-text);
+  }
+}

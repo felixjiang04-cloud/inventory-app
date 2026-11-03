@@ -1,0 +1,154 @@
+/* Bistro: the menu card. Black serif on cream, and dotted leaders from each
+   item to its figure so the eye travels straight across. Page titles sit on
+   a small enamel plaque, the white-on-blue of Paris street signs.
+
+   Spacing and sizes not listed here are the defaults in tokens.css. */
+
+:root[data-look='bistro'],
+[data-look-preview='bistro'] {
+  --color-bg: #f6f1e5;
+  --color-surface: #fdfaf2;
+  --color-sunken: #efe8d8;
+  --color-text: #1a1714;
+  --color-text-muted: #5a5248;
+  --color-border: #d9cfbd;
+  --color-border-strong: #8a7f6d;
+  --color-focus: #1a1714;
+  --color-accent: #1d3f94;
+  --color-accent-hover: #142d6b;
+  --color-accent-soft: #e3e8f4;
+  --color-on-accent: #ffffff;
+  --color-ok: #1b6a37;
+  --color-ok-soft: #e6f0e2;
+  --color-warn: #774700;
+  --color-warn-soft: #f9ecd0;
+  --color-warn-border: #c4861a;
+  --color-danger: #a1241a;
+  --color-danger-soft: #f9e4df;
+  --font-body: 'Jost Variable', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei',
+    'Noto Sans CJK SC', system-ui, sans-serif;
+  --font-heading: 'Bodoni Moda Variable', 'Songti SC', 'Noto Serif CJK SC',
+    'Source Han Serif SC', 'PingFang SC', 'Microsoft YaHei', serif;
+  --font-num: var(--font-body);
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --weight-strong: 600;
+  --weight-heading: 700;
+  --tracking-heading: normal;
+  --leading: 1.45;
+  --radius: 4px;
+  --rule: 1px;
+  --brand-tile: var(--color-accent);
+  --brand-paper: var(--color-on-accent);
+}
+
+/* The page title on an enamel plaque */
+:root[data-look='bistro'] .page > h1,
+:root[data-look='bistro'] .page-header > h1 {
+  display: inline-block;
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  border-radius: var(--radius);
+  outline: 1.5px solid var(--color-on-accent);
+  outline-offset: -5px;
+  font-size: var(--text-xl);
+}
+
+/* italics only where the font has them: Chinese stays upright */
+:root[data-look='bistro'] h2 {
+  font-style: italic;
+  font-weight: 500;
+  font-synthesis: none;
+}
+
+/* Menu-card rows: item, dotted leader, figure. Only rows that end in a
+   figure; rows that are just a link keep their usual layout. */
+:root[data-look='bistro'] .list {
+  background: transparent;
+  border: 0;
+}
+
+:root[data-look='bistro'] .list > li + li {
+  border-top: 0;
+}
+
+:root[data-look='bistro'] .list-row:has(> .num),
+:root[data-look='bistro'] .list-row:has(> .list-row-end) {
+  display: grid;
+  grid-template-columns: auto minmax(1.5rem, 1fr) auto;
+  grid-template-areas:
+    'title leader figure'
+    'meta meta extra';
+  align-items: baseline;
+  gap: 0 var(--space-2);
+  padding-left: 0;
+  padding-right: 0;
+}
+
+:root[data-look='bistro'] .list-row:has(> .num) > .list-row-main,
+:root[data-look='bistro'] .list-row:has(> .list-row-end) > .list-row-main,
+:root[data-look='bistro'] .list-row > .list-row-end {
+  display: contents;
+}
+
+:root[data-look='bistro'] .list-row-main > .list-row-title {
+  grid-area: title;
+}
+
+:root[data-look='bistro'] .list-row-main > .list-row-meta {
+  grid-area: meta;
+}
+
+:root[data-look='bistro'] .list-row:has(> .num)::before,
+:root[data-look='bistro'] .list-row:has(> .list-row-end)::before {
+  content: '';
+  grid-area: leader;
+  border-bottom: 2px dotted var(--color-border-strong);
+}
+
+:root[data-look='bistro'] .list-row > .num,
+:root[data-look='bistro'] .list-row-end > .num:not(.list-row-meta) {
+  grid-area: figure;
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+:root[data-look='bistro'] .list-row-end > .list-row-meta,
+:root[data-look='bistro'] .list-row-end > .badge {
+  grid-area: extra;
+  justify-self: end;
+}
+
+:root[data-look='bistro'] .list-row-title {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+:root[data-look='bistro'] .btn-primary {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+}
+
+:root[data-look='bistro'] .empty-state {
+  border: 1px solid var(--color-border-strong);
+  font-style: italic;
+  font-synthesis: none;
+}
+
+:root[data-look='bistro'] .topbar {
+  background: var(--color-bg);
+  border-bottom-color: var(--color-text);
+}
+
+:root[data-look='bistro'] .brand {
+  font-family: var(--font-heading);
+  font-size: 1.0625rem;
+}
+
+:root[data-look='bistro'] .mainnav {
+  border-top-color: var(--color-text);
+}

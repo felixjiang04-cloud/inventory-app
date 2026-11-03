@@ -24,7 +24,9 @@ h2,
 h3 {
   margin: 0 0 var(--space-3);
   line-height: 1.2;
-  font-weight: var(--weight-strong);
+  font-family: var(--font-heading);
+  font-weight: var(--weight-heading);
+  letter-spacing: var(--tracking-heading);
 }
 
 h1 {
@@ -67,8 +69,14 @@ textarea {
   min-height: var(--tap);
   padding: var(--space-2) var(--space-3);
   background: var(--color-surface);
-  border: 1px solid var(--color-border-strong);
+  border: var(--rule) solid var(--color-border-strong);
   border-radius: var(--radius);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
 }
 
 /* A clearly visible outline for whoever uses a keyboard */
@@ -88,7 +96,8 @@ code {
 
 /* Numbers that must line up in columns: money, quantities */
 .num {
-  font-variant-numeric: tabular-nums;
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums lining-nums;
   text-align: right;
   white-space: nowrap;
 }

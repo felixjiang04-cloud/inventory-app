@@ -1,0 +1,104 @@
+/* Pâtisserie: the calm of a pastry counter. Pale rose surfaces, cocoa brown
+   instead of black, a refined display serif for titles and a fine double
+   line under each one. The figures stay large and the main button is a
+   solid cocoa block.
+
+   Spacing and sizes not listed here are the defaults in tokens.css. */
+
+:root[data-look='patisserie'],
+[data-look-preview='patisserie'] {
+  --color-bg: #f8eeeb;
+  --color-surface: #fffaf8;
+  --color-sunken: #f1e2de;
+  --color-text: #3a221b;
+  --color-text-muted: #6b4f47;
+  --color-border: #e5cfc8;
+  --color-border-strong: #a07f75;
+  --color-focus: #2f5aa8;
+  --color-accent: #4a2b20;
+  --color-accent-hover: #331d15;
+  --color-accent-soft: #f3e4df;
+  --color-on-accent: #fffaf8;
+  --color-ok: #1f6334;
+  --color-ok-soft: #e6f0e3;
+  --color-warn: #6e4800;
+  --color-warn-soft: #f6dc9a;
+  --color-warn-border: #c08a1a;
+  --color-danger: #9b2519;
+  --color-danger-soft: #fbe0db;
+  --font-body: 'Nunito Sans Variable', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Noto Sans CJK SC', system-ui, sans-serif;
+  --font-heading: 'Gilda Display', 'Songti SC', 'Noto Serif CJK SC',
+    'Source Han Serif SC', 'PingFang SC', 'Microsoft YaHei', serif;
+  --font-num: var(--font-body);
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 2.25rem;
+  --weight-strong: 600;
+  --weight-heading: 400;
+  --tracking-heading: normal;
+  --leading: 1.45;
+  --radius: 10px;
+  --rule: 1px;
+  --brand-tile: var(--color-accent);
+  --brand-paper: var(--color-on-accent);
+}
+
+/* A fine double line under each title */
+:root[data-look='patisserie'] h1,
+:root[data-look='patisserie'] h2,
+:root[data-look='patisserie'] .page-header {
+  padding-bottom: var(--space-2);
+  border-bottom: 3px double var(--color-border-strong);
+}
+
+/* in a header with a figure, the line runs under both */
+:root[data-look='patisserie'] .page-header h1 {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+:root[data-look='patisserie'] .empty-state {
+  background: var(--color-sunken);
+  border: 0;
+}
+
+:root[data-look='patisserie'] .btn-primary {
+  font-weight: 700;
+}
+
+:root[data-look='patisserie'] .btn-quiet {
+  text-decoration: underline;
+  text-decoration-color: var(--color-border-strong);
+}
+
+:root[data-look='patisserie'] .num {
+  font-weight: 600;
+}
+
+:root[data-look='patisserie'] .stock-qty {
+  font-size: 1.375rem;
+  font-weight: 700;
+}
+
+/* "needs checking" stands apart from the brown accent */
+:root[data-look='patisserie'] .badge-warn {
+  border: 1px solid var(--color-warn-border);
+}
+
+:root[data-look='patisserie'] .topbar {
+  background: var(--color-bg);
+}
+
+:root[data-look='patisserie'] .brand {
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  font-weight: 400;
+}
+
+@media (min-width: 900px) {
+  :root[data-look='patisserie'] .mainnav a.active {
+    background: var(--color-sunken);
+  }
+}

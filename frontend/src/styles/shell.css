@@ -11,7 +11,7 @@
   min-height: 3.5rem;
   padding: var(--space-2) var(--space-4);
   background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: var(--rule) solid var(--color-border);
 }
 
 .brand {
@@ -28,6 +28,20 @@
   color: var(--color-text);
 }
 
+/* the logo, coloured by the look (components/BrandMark.tsx) */
+.brand-mark {
+  flex: none;
+}
+
+.bm-tile,
+.bm-line {
+  fill: var(--brand-tile);
+}
+
+.bm-paper {
+  fill: var(--brand-paper);
+}
+
 /* --- Bottom tab bar (phones) ----------------------------------------------- */
 
 .mainnav {
@@ -42,7 +56,7 @@
   height: calc(var(--tabbar-height) + env(safe-area-inset-bottom));
   padding-bottom: env(safe-area-inset-bottom);
   background: var(--color-surface);
-  border-top: 1px solid var(--color-border);
+  border-top: var(--rule) solid var(--color-border);
 }
 
 .mainnav a {
@@ -108,7 +122,7 @@
   .shell .topbar {
     grid-column: 1;
     grid-row: 1;
-    border-right: 1px solid var(--color-border);
+    border-right: var(--rule) solid var(--color-border);
     border-bottom: none;
   }
 
@@ -122,7 +136,7 @@
     height: auto;
     padding: var(--space-2);
     border-top: none;
-    border-right: 1px solid var(--color-border);
+    border-right: var(--rule) solid var(--color-border);
   }
 
   .mainnav a {

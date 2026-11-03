@@ -1,0 +1,135 @@
+/* Signal: station signage, read at a glance. Page titles sit on black sign
+   bands from edge to edge, type is large and mixed case, and rows that open
+   something end in an arrow. Atkinson Hyperlegible was drawn so that letters
+   like l, 1 and I can't be confused.
+
+   Spacing and sizes not listed here are the defaults in tokens.css. */
+
+:root[data-look='signal'],
+[data-look-preview='signal'] {
+  --color-bg: #f3f1ec;
+  --color-surface: #ffffff;
+  --color-sunken: #e9e6df;
+  --color-text: #141311;
+  --color-text-muted: #4e4a44;
+  --color-border: #d2cdc3;
+  --color-border-strong: #7b766d;
+  --color-focus: #1b5fd0;
+  --color-accent: #141311;
+  --color-accent-hover: #34322e;
+  --color-accent-soft: #e4e1da;
+  --color-on-accent: #ffffff;
+  --color-ok: #1b6a37;
+  --color-ok-soft: #e5f0e7;
+  --color-warn: #774700;
+  --color-warn-soft: #faeed4;
+  --color-warn-border: #c4861a;
+  --color-danger: #a1241a;
+  --color-danger-soft: #fae6e2;
+  --font-body: 'Atkinson Hyperlegible Next Variable', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Noto Sans CJK SC', system-ui, sans-serif;
+  --font-heading: var(--font-body);
+  --font-num: var(--font-body);
+  --text-md: 1.0625rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 2rem;
+  --weight-strong: 700;
+  --weight-heading: 800;
+  --tracking-heading: normal;
+  --leading: 1.45;
+  --radius: 4px;
+  --rule: 1px;
+  --brand-tile: #141311;
+  --brand-paper: #ffffff;
+}
+
+/* The page title is a sign band, edge to edge */
+:root[data-look='signal'] .page > h1,
+:root[data-look='signal'] .page > .page-header {
+  margin: calc(-1 * var(--space-5)) calc(-1 * var(--space-4)) var(--space-5);
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+:root[data-look='signal'] .page-header h1 {
+  margin: 0;
+}
+
+:root[data-look='signal'] h2 {
+  padding-bottom: var(--space-2);
+  border-bottom: 3px solid var(--color-text);
+  font-size: var(--text-lg);
+}
+
+/* Rows that open something end in an arrow (not read aloud) */
+:root[data-look='signal'] a.list-row::after {
+  content: '→';
+  content: '→' / '';
+  font-size: 1.375rem;
+  font-weight: 700;
+}
+
+:root[data-look='signal'] .btn-large {
+  min-height: 3.75rem;
+  font-size: var(--text-lg);
+}
+
+:root[data-look='signal'] .topbar {
+  border-bottom: 0;
+}
+
+/* The tab bar is a sign too */
+:root[data-look='signal'] .mainnav {
+  background: var(--color-accent);
+  border-top: 0;
+}
+
+:root[data-look='signal'] .mainnav a {
+  color: #c9c5bd; /* 10.7:1 on the black bar */
+}
+
+:root[data-look='signal'] .mainnav a.active {
+  color: #ffffff;
+  box-shadow: inset 0 -5px 0 #ffffff;
+}
+
+:root[data-look='signal'] .mainnav a:focus-visible {
+  outline-color: #ffffff;
+}
+
+:root[data-look='signal'] .mainnav .icon {
+  stroke-width: 2.25px;
+}
+
+@media (min-width: 900px) {
+  :root[data-look='signal'] .page > h1,
+  :root[data-look='signal'] .page > .page-header {
+    margin-top: 0;
+  }
+
+  /* on a computer the whole sidebar is the sign */
+  :root[data-look='signal'] .shell .topbar {
+    background: var(--color-accent);
+    border-right: 0;
+  }
+
+  :root[data-look='signal'] .shell .brand,
+  :root[data-look='signal'] .shell .brand:hover {
+    color: #ffffff;
+  }
+
+  :root[data-look='signal'] .mainnav {
+    border-right: 0;
+  }
+
+  :root[data-look='signal'] .mainnav a:hover {
+    background: #2a2825;
+  }
+
+  :root[data-look='signal'] .mainnav a.active {
+    background: #34322e;
+    box-shadow: inset 5px 0 0 #ffffff;
+  }
+}
