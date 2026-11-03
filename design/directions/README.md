@@ -1,11 +1,16 @@
 # Inventory Look Book: 20 design directions
 
 Twenty alternative looks for the app, each shown on the same screens with the
-same data: Home ("To do") and Stock on a phone, Stock on a computer with the
-sidebar, and a strip of states (needs checking, confirmed, error, keyboard
-focus). Every direction can be switched between English, French and Chinese.
+same data: Home ("To do"), Stock and Invoices to check on a phone, Stock on a
+computer with the sidebar, and a strip of states (needs checking, confirmed,
+error, keyboard focus). Every direction can be switched between English,
+French and Chinese.
 
-Nothing here changes the app. These are mockups for choosing a direction.
+These files are mockups; they don't change the app. Five of the directions
+are now real looks in the app, chosen on the More page: **Ticket** (the
+default), **Signal**, **Bistro**, **Pâtisserie** and **Herbier**. Their app
+versions live in `frontend/src/styles/looks/` (Ticket's values in
+`tokens.css`), extended to every screen.
 
 ## Looking at it
 

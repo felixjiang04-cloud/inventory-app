@@ -78,7 +78,8 @@ window.DIRECTIONS.push({
   },
   tweaks: `
 /* Page titles over a double rule, like a ruled-off total */
-h1 {
+.page > h1,
+.page-header {
   padding-bottom: var(--space-2);
   border-bottom: 3px double var(--color-text);
 }

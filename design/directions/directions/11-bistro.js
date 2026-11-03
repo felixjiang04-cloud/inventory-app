@@ -78,7 +78,8 @@ window.DIRECTIONS.push({
   },
   tweaks: `
 /* The page title on an enamel plaque */
-.page > h1 {
+.page > h1,
+.page-header > h1 {
   display: inline-block;
   padding: var(--space-2) var(--space-4);
   background: var(--color-accent);
@@ -104,7 +105,9 @@ h2 {
   border-top: 0;
 }
 
-.list-row {
+/* only rows that end in a figure; a row that is just a link keeps its layout */
+.list-row:has(> .num),
+.list-row:has(> .list-row-end) {
   display: grid;
   grid-template-columns: auto minmax(1.5rem, 1fr) auto;
   grid-template-areas:
@@ -115,37 +118,45 @@ h2 {
   padding: var(--space-2) 0;
 }
 
-.list-row-main,
-.list-row-end {
+.list-row:has(> .num) > .list-row-main,
+.list-row:has(> .list-row-end) > .list-row-main,
+.list-row > .list-row-end {
   display: contents;
 }
 
-.list-row-title {
+.list-row-main > .list-row-title {
   grid-area: title;
-  font-family: var(--font-heading);
-  font-size: 1.25rem;
-  font-weight: 500;
 }
 
 .list-row-main > .list-row-meta {
   grid-area: meta;
 }
 
-.list-row::before {
+.list-row:has(> .num)::before,
+.list-row:has(> .list-row-end)::before {
   content: '';
   grid-area: leader;
   border-bottom: 2px dotted var(--color-border-strong);
 }
 
 .list-row > .num,
-.stock-qty {
+.list-row-end > .num:not(.list-row-meta) {
   grid-area: figure;
   font-size: 1.125rem;
   font-weight: 600;
 }
 
-.list-row-end > .list-row-meta {
+/* under the figure: what was spent, or whether the invoice needs checking */
+.list-row-end > .list-row-meta,
+.list-row-end > .badge {
   grid-area: extra;
+  justify-self: end;
+}
+
+.list-row-title {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 500;
 }
 
 .btn-primary {

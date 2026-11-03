@@ -76,9 +76,16 @@ window.DIRECTIONS.push({
   tweaks: `
 /* A fine double line under each title */
 h1,
-h2 {
+h2,
+.page-header {
   padding-bottom: var(--space-2);
   border-bottom: 3px double var(--color-border-strong);
+}
+
+/* in a header with a figure, the line runs under both */
+.page-header h1 {
+  padding-bottom: 0;
+  border-bottom: 0;
 }
 
 .list {

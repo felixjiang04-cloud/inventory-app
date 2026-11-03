@@ -77,11 +77,16 @@ window.DIRECTIONS.push({
   ],
   tweaks: `
 /* The page title is a sign band, edge to edge */
-.page > h1 {
+.page > h1,
+.page > .page-header {
   margin: calc(-1 * var(--space-5)) calc(-1 * var(--space-4)) var(--space-5);
   padding: var(--space-4) var(--space-4) var(--space-3);
   background: var(--color-accent);
   color: var(--color-on-accent);
+}
+
+.page-header h1 {
+  margin: 0;
 }
 
 h2 {
@@ -125,7 +130,8 @@ a.list-row::after {
 }
 
 @media (min-width: 900px) {
-  .page > h1 {
+  .page > h1,
+  .page > .page-header {
     margin-top: 0;
   }
 

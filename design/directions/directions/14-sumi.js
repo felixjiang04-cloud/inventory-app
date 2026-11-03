@@ -149,11 +149,16 @@ h2 {
   grid-column: 2;
 }
 
-.page:lang(zh) > h1 {
+.page:lang(zh) > h1,
+.page:lang(zh) > .page-header {
   grid-column: 1;
   grid-row: 1 / span 8;
   margin: 0;
   padding-top: var(--space-1);
+}
+
+.page:lang(zh) > h1,
+.page:lang(zh) > .page-header h1 {
   writing-mode: vertical-rl;
   letter-spacing: 0.35em;
 }

@@ -242,15 +242,45 @@
     )
   }
 
+  // Invoices to check, as frontend/src/pages/ReviewQueue.tsx draws it
+  function queueHtml(t, lang) {
+    const rows = DATA.queue
+      .map(
+        (r) =>
+          '<li><a class="list-row" href="#"><span class="list-row-main">' +
+          `<span class="list-row-title">${esc(r.supplier)}</span>` +
+          `<span class="list-row-meta">${esc(F.date(r.date, lang))} · ${esc(r.number)}</span></span>` +
+          '<span class="list-row-end">' +
+          `<span class="num">${esc(F.money(r.cents, lang))}</span>` +
+          (r.unconfirmed > 0
+            ? `<span class="badge badge-warn">${esc(fill(t.review.toConfirm, { count: r.unconfirmed }))}</span>`
+            : `<span class="badge badge-ok">${esc(t.review.readyToAdd)}</span>`) +
+          '</span></a></li>',
+      )
+      .join('')
+    return (
+      '<div class="page">' +
+      `<div class="page-header"><h1>${esc(t.review.title)}</h1></div>` +
+      `<ul class="list">${rows}</ul></div>`
+    )
+  }
+
+  // Each screen: its title (for the top bar), its tab, and its page.
+  const SCREENS = {
+    home: { title: (t) => t.home.title, tab: 'home', page: (t, lang) => homeHtml(t, lang) },
+    stock: { title: (t) => t.stock.title, tab: 'stock', page: (t, lang, uid) => stockHtml(t, lang, uid) },
+    queue: { title: (t) => t.review.title, tab: 'check', page: (t, lang) => queueHtml(t, lang) },
+  }
+
   function screenHtml(dir, lang, screen, uid) {
     const t = S[lang]
-    const title = screen === 'home' ? t.home.title : t.stock.title
+    const s = SCREENS[screen]
     return (
       `<div class="mock dir-${dir.id}" lang="${lang}"><div class="shell">` +
-      `<header class="topbar" data-screen="${esc(title)}">` +
+      `<header class="topbar" data-screen="${esc(s.title(t))}">` +
       `<a class="brand" href="#">${window.MOCK_BRAND_MARK}${esc(t.appTitle)}</a></header>` +
-      `<nav class="mainnav" aria-label="${esc(t.nav.main)}">${navHtml(t, screen)}</nav>` +
-      `<main class="content">${screen === 'home' ? homeHtml(t, lang) : stockHtml(t, lang, uid)}</main>` +
+      `<nav class="mainnav" aria-label="${esc(t.nav.main)}">${navHtml(t, s.tab)}</nav>` +
+      `<main class="content">${s.page(t, lang, uid)}</main>` +
       '</div></div>'
     )
   }
@@ -319,7 +349,7 @@
     lab.className = 'lab'
     lab.innerHTML = Object.keys(LANGS)
       .flatMap((lang) =>
-        ['home', 'stock'].map(
+        ['home', 'stock', 'queue'].map(
           (screen) =>
             `<div class="frame frame-phone" style="width:360px;height:780px" data-lang="${lang}">` +
             `${screenHtml(dir, lang, screen, `lab-${dir.id}-${lang}-${screen}`)}</div>`,
@@ -388,9 +418,10 @@
       '<header class="masthead">' +
       '<p class="eyebrow">Restaurant Inventory · design directions · November 2026</p>' +
       '<h1>Inventory Look Book</h1>' +
-      '<p class="lede">Twenty ways the app could look. Each one shows the same Home and Stock screens with the same invoices, ' +
+      '<p class="lede">Twenty ways the app could look. Each one shows the same Home, Stock and Invoices to check screens with the same invoices, ' +
       'is built for a phone held in one hand in a busy kitchen, and could be adopted by changing <code>tokens.css</code> ' +
       'plus a few small rules. Open one to see it at full size, switch its language, check its contrast and copy its tokens.</p>' +
+      '<p class="lede">Five of them are now in the app, chosen on the More page: Ticket (the default), Signal, Bistro, Pâtisserie and Herbier.</p>' +
       '</header>' +
       (shortlist
         ? '<section class="shortlist" aria-labelledby="shortlist-title">' +
@@ -495,6 +526,7 @@
       '<section class="screens" aria-label="Screens">' +
       `<figure><figcaption>Home on a phone</figcaption>${frameHtml('phone', screenHtml(dir, lang, 'home', `home-${dir.id}`))}</figure>` +
       `<figure><figcaption>Stock on a phone</figcaption>${frameHtml('phone', screenHtml(dir, lang, 'stock', `stock-${dir.id}`))}</figure>` +
+      `<figure><figcaption>Invoices to check on a phone (two sample deliveries)</figcaption>${frameHtml('phone', screenHtml(dir, lang, 'queue', `queue-${dir.id}`))}</figure>` +
       `<figure><figcaption>Needs checking, confirmed, error, keyboard focus</figcaption>${frameHtml('states', statesHtml(dir, lang))}</figure>` +
       '</section>' +
       `<figure class="desktop"><figcaption>Stock on a computer, with the sidebar</figcaption>${frameHtml('desktop', screenHtml(dir, lang, 'stock', `desk-${dir.id}`))}</figure>` +

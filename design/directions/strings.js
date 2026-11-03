@@ -23,6 +23,7 @@ window.MOCK_STRINGS = {
       lastDelivery: 'Last delivery {{date}}',
       spent: '{{amount}} spent',
     },
+    review: { title: 'Invoices to check', toConfirm: '{{count}} to confirm', readyToAdd: 'Ready to add' },
     quantity: 'quantity',
     allConfirmed: 'All lines confirmed',
     network: 'Could not reach the server. Check your connection and try again.',
@@ -46,6 +47,7 @@ window.MOCK_STRINGS = {
       lastDelivery: 'Dernière livraison le {{date}}',
       spent: '{{amount}} dépensés',
     },
+    review: { title: 'Factures à vérifier', toConfirm: '{{count}} à confirmer', readyToAdd: 'Prête à ajouter' },
     quantity: 'quantité',
     allConfirmed: 'Toutes les lignes sont confirmées',
     network: 'Impossible de joindre le serveur. Vérifiez votre connexion et réessayez.',
@@ -69,6 +71,7 @@ window.MOCK_STRINGS = {
       lastDelivery: '最近到货：{{date}}',
       spent: '已花费 {{amount}}',
     },
+    review: { title: '待核对发票', toConfirm: '{{count}} 行待确认', readyToAdd: '可以入库' },
     quantity: '数量',
     allConfirmed: '所有行已确认',
     network: '无法连接服务器，请检查网络后重试。',
@@ -85,6 +88,11 @@ window.MOCK_DATA = {
   stock: [
     { name: "Huile d'olive", qty: 3000, unit: 'ml', spentCents: 2500, lastDelivery: '2026-07-18' },
     { name: 'Tomates Roma', qty: 15000, unit: 'g', spentCents: 4500, lastDelivery: '2026-07-19' },
+  ],
+  // two later deliveries waiting to be checked (sample data)
+  queue: [
+    { supplier: 'Marché Bonanza', number: '4471', date: '2026-07-21', cents: 3850, unconfirmed: 2 },
+    { supplier: 'Marché Bonanza', number: '4466', date: '2026-07-20', cents: 2400, unconfirmed: 0 },
   ],
 }
 
